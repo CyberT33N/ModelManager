@@ -1,0 +1,1 @@
+grep --exclude-dir=node_modules -rl . -e 'test.only\|it.only\|describe.only' --null | tr '\n' ' ' | xargs -0 npx vitest --testTimeout=300000 --watch=false --disable-console-intercept | grep . || npx vitest --coverage --watch=false --testTimeout=300000 --disable-console-intercept

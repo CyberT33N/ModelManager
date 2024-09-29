@@ -1,0 +1,53 @@
+{
+  "ts-node": {
+    "esm": true, // Enable ECMAScript modules for ts-node
+    // Do not forget to `npm i -D tsconfig-paths`
+    "require": ["tsconfig-paths/register"], // Register tsconfig paths at runtime
+    // these options are overrides used only by ts-node
+    // same as the --compilerOptions flag and the TS_NODE_COMPILER_OPTIONS environment variable
+    "compilerOptions": {
+      "target": "ES2022", // Set ECMAScript target version to ES2022 for ts-node
+      "module": "NodeNext", // Use NodeNext module resolution for compatibility with ES modules in Node.js
+      "baseUrl": ".", // Set the base URL for module resolution to the root directory
+      "paths": {
+        "@/*": ["./"] // Map @/ to the root directory for easier imports
+      }
+    }
+  },
+  "compilerOptions": {
+    "target": "ES2022", // Set ECMAScript target version to ES2022
+    "module": "ESNext", // Use the latest ECMAScript module system
+    "lib": [
+      "dom", // Include DOM types
+      "dom.iterable", // Include DOM iterable types
+      "esnext", // Include ESNext library features
+      "es2022" // Include ES2022 library features
+    ],
+    "allowJs": true, // Allow JavaScript files to be compiled
+    "outDir": "./dist", // Set the output directory for compiled files
+    "skipLibCheck": true, // Skip type checking of declaration files (d.ts)
+    "allowImportingTsExtensions": true, // Allow importing TypeScript files with extensions
+    "strict": true, // Enable strict type checking
+    "forceConsistentCasingInFileNames": true, // Enforce consistent file name casing across the project
+    "noEmit": true, // Disable emitting compiled files (useful in development)
+    "esModuleInterop": true, // Enable interoperability between CommonJS and ES modules
+    "moduleResolution": "node", // Use Node.js-style module resolution
+    "resolveJsonModule": true, // Enable importing of JSON files
+    "isolatedModules": true, // Ensure each file is treated as an isolated module
+    "jsx": "preserve", // Preserve JSX syntax for further processing by another tool
+    "incremental": true, // Enable incremental builds to improve build performance
+    "tsBuildInfoFile": "./.tsbuildInfo",
+    "baseUrl": ".", // Set the base URL for module resolution to the root directory
+    "paths": {
+      "@/*": ["./*"] // Map @/ to the root directory for cleaner imports
+    }
+  },
+  "include": [
+    "**/*.ts", // Include all .ts (TypeScript) files
+    "**/*.tsx" // Include all .tsx (TypeScript + JSX) files
+  ],
+  "exclude": [
+    "node_modules", // Exclude the node_modules directory from compilation
+    "**/*.d.ts" // Exclude declaration files from compilation
+  ]
+}

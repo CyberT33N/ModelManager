@@ -1,0 +1,64 @@
+{
+  "name": "model-manager",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "ModelManager is a powerful and flexible manager for Mongoose models in Node.js applications. This class simplifies the management of data models, allowing developers to dynamically load and manage Mongoose models.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npx eslint src && tsup",
+    "test-only": "bash test-only.sh",
+    "test": "vitest --coverage --disable-console-intercept --watch=false",
+    "test:watch": "vitest --watch",
+    "test:integration": "vitest run --testTimeout=300000 --coverage --disable-console-intercept --watch=false --config vitest.integration.config.ts",
+    "test:unit": "vitest run --testTimeout=300000 --coverage --disable-console-intercept --watch=false --config vitest.unit.config.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CyberT33N/ModelManager.git"
+  },
+  "keywords": [
+    "mongoose",
+    "model",
+    "manager",
+    "model-manager",
+    "mongodb",
+    "node"
+  ],
+  "author": "CyberT33N",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CyberT33N/ModelManager/issues"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.10.0",
+    "@types/eslint__js": "^8.42.3",
+    "@types/express": "^4.17.21",
+    "@types/lodash": "^4.17.9",
+    "@types/node": "^20.12.11",
+    "@types/sinon": "^17.0.3",
+    "@vitest/coverage-v8": "^2.0.5",
+    "eslint": "^9.10.0",
+    "globals": "^15.2.0",
+    "sinon": "^18.0.0",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.0.2",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.4.0",
+    "vite-tsconfig-paths": "^5.0.1",
+    "vitest": "^2.1.1"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "error-manager-helper": "^3.24.0",
+    "glob": "^10.3.15",
+    "lodash": "^4.17.21",
+    "mongoose": "^8.7.0"
+  }
+}

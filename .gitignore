@@ -1,0 +1,6 @@
+node_modules
+dist
+coverage
+.tsbuildInfo
+test.ts
+TODO.md
