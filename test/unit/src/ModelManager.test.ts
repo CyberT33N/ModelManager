@@ -52,7 +52,7 @@ describe('ModelManager', () => {
             initStub.restore()
         })
 
-        it.only('should create new instance', async() => {
+        it('should create new instance', async() => {
             const modelManager = await ModelManager.getInstance()
 
             expect(initStub.calledOnce).toBe(true)
@@ -114,11 +114,11 @@ describe('ModelManager', () => {
                     createModelSpy.restore()
                 })
             
-                it('should return an array of globbed models', async() => {
+                it.only('should return an array of globbed models', async() => {
                     const expression = `${process.cwd()}/models/test/**/*.model.mjs`
                     const result = await (<any>modelManager).globModels(expression)
     
-                    const modelDetails = await import('@/models/test/Test.model.mjs')
+                    const modelDetails = await import('@/test//models/Test.model.mjs')
                     const { modelName, dbName, schema } = modelDetails
     
                     expect(result[0].modelName).toBe(modelName)

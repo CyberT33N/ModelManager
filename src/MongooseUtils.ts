@@ -15,7 +15,7 @@
 
 import mongoose, {
     type Connection,
-    type Schema,
+    Schema,
     type Model,
     type SchemaDefinition,
     type SchemaDefinitionType
@@ -61,15 +61,16 @@ class MongooseUtils {
 
     /**
      * Creates a Mongoose schema for a given model.
-     * @param {SchemaDefinition<SchemaDefinitionType<T>>} schema - The schema definition for the model.
+     * @template TMongooseSchema - The type of the Mongoose schema.
+     * @param {SchemaDefinition<SchemaDefinitionType<TMongooseSchema>>} schema - The schema definition for the model.
      * @param {string} name - The name of the collection in MongoDB.
      * @returns A Mongoose Schema object.
      */
-    public static createSchema<T>(
-        schema: SchemaDefinition<SchemaDefinitionType<T>>,
+    public static createSchema<TMongooseSchema>(
+        schema: SchemaDefinition<SchemaDefinitionType<TMongooseSchema>>,
         name: string
-    ): Schema<T> {
-        const mongooseSchema = new mongoose.Schema<T>(schema, { collection: name })
+    ): mongoose.Schema<TMongooseSchema> {
+        const mongooseSchema = new Schema<TMongooseSchema>(schema, { collection: name })
         return mongooseSchema
     }
 
@@ -116,18 +117,19 @@ class MongooseUtils {
 
     /**
      * Creates a model for a specified schema and collection name.
-     * @param {SchemaDefinition<SchemaDefinitionType<T>>} schema - The schema definition for the model.
+     * @template TMongooseSchema - The type of the Mongoose schema.
+     * @param {SchemaDefinition<SchemaDefinitionType<TMongooseSchema>>} schema - The schema definition for the model.
      * @param {string} name - The name of the model and collection.
      * @returns A Promise that resolves to the Mongoose Model.
      */
-    public async createModel<T>(
-        schema: SchemaDefinition<SchemaDefinitionType<T>>,
+    public async createModel<TMongooseSchema>(
+        schema: SchemaDefinition<SchemaDefinitionType<TMongooseSchema>>,
         name: string
-    ): Promise<Model<T>> {
-        const mongooseSchema = MongooseUtils.createSchema(schema, name)
+    ): Promise<Model<TMongooseSchema>> {
+        const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, name)
         const conn = await this.getConnection()
 
-        const model = conn.model<T>(name, mongooseSchema, name)
+        const model = conn.model<TMongooseSchema>(name, mongooseSchema, name)
         return model
     }
 }
