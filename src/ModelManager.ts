@@ -103,7 +103,7 @@ import MongooseUtils from './MongooseUtils'
  * // }
  * ```
  */
- type GenerateMongooseSchemaType<Schema> = {
+ type GenerateMongooseSchemaType<Schema extends mongoose.Schema> = {
      [K in keyof Schema]: SchemaValue<Schema[K]>
  }
 
@@ -139,7 +139,7 @@ class ModelManager {
     private static instance: ModelManager
 
     /** A list of all loaded models. */
-    public models: Array<ModelInterface<Document>> = []
+    public models: ModelInterface<GenerateMongooseSchemaType<mongoose.Schema>>[] = []
 
     /**
      * Private constructor to prevent direct instantiation.
@@ -175,13 +175,16 @@ class ModelManager {
     }
 
     /**
-     * Scans the filesystem for model definitions and dynamically imports them.
-     * @template T - The type of the document.
-     * @param expression - The file pattern to search for Mongoose models.
-     * @returns A list of model interfaces representing the models.
+     * Globs through files to dynamically import Mongoose models and creates typed models.
+     * 
      * @private
+     * @param {string} expression - The glob pattern used to find model files.
+     * @returns {Promise<ModelInterface<GenerateMongooseSchemaType<mongoose.Schema>>[]>} 
+     * - A promise that resolves to an array of typed Mongoose models.
      */
-    private async globModels<T>(expression: string): Promise<Array<ModelInterface<T>>> {
+    private async globModels(
+        expression: string
+    ): Promise< ModelInterface<GenerateMongooseSchemaType<mongoose.Schema>>[] > {
         const modelPaths = await glob(expression)
         const models = []
 
@@ -190,11 +193,13 @@ class ModelManager {
             const modelDetails = await import(/* webpackIgnore: true */ path)
             const { modelName, dbName, schema } = modelDetails
 
+            // Generate the Mongoose schema type
             type TMongooseSchema = GenerateMongooseSchemaType<typeof schema>
 
             const Model = await this.createModel<TMongooseSchema>({
                 modelName, schema, dbName
             })
+            
             console.log('[ModelManager] - Globbing Model:', modelName)
 
             const model: ModelInterface<TMongooseSchema> = {
@@ -214,7 +219,7 @@ class ModelManager {
      * Returns all loaded Mongoose models.
      * @returns A list of all loaded Mongoose models.
      */
-    public getModels(): Array<ModelInterface<Document>> {
+    public getModels(): ModelInterface<Document>[] {
         const models = this.models
         return models
     }
