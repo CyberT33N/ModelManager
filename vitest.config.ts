@@ -13,6 +13,12 @@
 ███████████████████████████████████████████████████████████████████████████████
 */
 
+import dotenv from 'dotenv'
+// Load .env 
+dotenv.config()
+// Load .env.test and override .env
+dotenv.config({ path: '.env.test', override: true })
+
 // ==== DEPENDENCIES ====
 import tsconfigPaths from 'vite-tsconfig-paths'
 

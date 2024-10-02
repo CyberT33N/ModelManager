@@ -18,34 +18,38 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 
 // ==== DEPENDENCIES ====
 import sinon from 'sinon'
-import mongoose from 'mongoose'
+import mongoose, {
+    type SchemaDefinition
+} from 'mongoose'
 
 // ==== CODE ====
-import ModelManager from '@/src/ModelManager'
+import ModelManager, {
+    type GenerateMongooseSchemaType,
+    type ModelInterface
+} from '@/src/ModelManager'
 
 // ==== CLASSES ====
 import MongooseUtils from '@/src/MongooseUtils'
 
 describe('ModelManager', () => {
-    interface IUser {
-      name: string;
-      email: string;
-      avatar?: string;
-    }
-    
-    const userSchema = new mongoose.Schema<IUser>({
+    const schema = {
         name: { type: String, required: true },
         email: { type: String, required: true },
         avatar: String
-    })
+    }
 
-    const UserModel = mongoose.model<IUser>('User', userSchema)
+    type TMongooseSchema = GenerateMongooseSchemaType<typeof schema>;
+    
+    const userSchema = new mongoose.Schema<TMongooseSchema>(schema)
+    const UserModel = mongoose.model<TMongooseSchema>('User', userSchema)
 
     describe('getInstance()', () => {
         let initStub: sinon.SinonStub
 
         beforeEach(() => {
-            initStub = sinon.stub((<any>ModelManager).prototype, 'init').resolves()
+            initStub = sinon.stub(
+                ModelManager.prototype, 'init' as keyof ModelManager
+            ).resolves()
         })
 
         afterEach(() => {
@@ -58,6 +62,17 @@ describe('ModelManager', () => {
             expect(initStub.calledOnce).toBe(true)
             expect(modelManager.models).toEqual([])
         })
+
+        it('should return existing instance', async() => {
+            const modelManager = await ModelManager.getInstance()
+
+            expect(initStub.calledOnce).toBe(true)
+            expect(modelManager.models).toEqual([])
+
+            const modelManager2 = await ModelManager.getInstance()
+            expect(initStub.calledOnce).toBe(true)
+            expect(modelManager2.models).toEqual([])
+        })
     })
 
     describe('[METHODS]', () => {
@@ -69,36 +84,41 @@ describe('ModelManager', () => {
 
         describe('[PRIVATE]', () => {
             describe('init()', () => {
-                let getModelsStub: sinon.SinonStub
+                let globModelsStub: sinon.SinonStub
 
                 beforeEach(() => {
-                    getModelsStub = sinon.stub((<any>ModelManager).prototype, 'globModels').resolves([])
+                    globModelsStub = sinon.stub(
+                        ModelManager.prototype, 'globModels' as keyof ModelManager
+                    ).resolves([])
+
+                    // Reset models because of beforeEach above
+                    modelManager.models = []
                 })
 
                 afterEach(() => {
-                    getModelsStub.restore()
+                    globModelsStub.restore()
                 })
             
                 it('should initialize models if not already initialized', async() => {
-                    await (<any>modelManager).init()
+                    await Object.getPrototypeOf(modelManager).init()
 
-                    expect(getModelsStub.calledOnce).toBe(true)
-                    expect(getModelsStub.calledWith(`${process.cwd()}/**/*.model.mjs`)).toBe(true)
+                    expect(globModelsStub.calledOnce).toBe(true)
+                    expect(globModelsStub.calledWith(`${process.cwd()}/**/*.model.mjs`)).toBe(true)
                     expect(modelManager.models).toEqual([])
                 })
 
-                it('should not initialize models if already initialized', async() => {
-                    const expectedModels = [{
+                it.only('should not initialize models if already initialized', async() => {
+                    const expectedModels: ModelInterface<TMongooseSchema>[] = [{
                         modelName: 'Model1',
                         Model: UserModel,
                         dbName: 'test',
-                        schema: userSchema
+                        schema
                     }]
 
                     modelManager.models = expectedModels
-                    await (<any>modelManager).init()
+                    await Object.getPrototypeOf(modelManager).init()
 
-                    expect(getModelsStub.calledOnce).toBe(false)
+                    expect(globModelsStub.calledOnce).toBe(false)
                     expect(modelManager.models).toEqual(expectedModels)
                 })
             })
@@ -114,24 +134,25 @@ describe('ModelManager', () => {
                     createModelSpy.restore()
                 })
             
-                it.only('should return an array of globbed models', async() => {
-                    const expression = `${process.cwd()}/models/test/**/*.model.mjs`
-                    const result = await (<any>modelManager).globModels(expression)
-    
-                    const modelDetails = await import('@/test//models/Test.model.mjs')
+                it('should return an array of globbed models', async() => {
+                    const expression = `${process.cwd()}/test/models/**/*.model.mjs`
+                    const result = await Object.getPrototypeOf(modelManager).globModels(expression)
+                    
+                    const modelDetails = await import('@/test/models/Test.model.mjs')
                     const { modelName, dbName, schema } = modelDetails
     
                     expect(result[0].modelName).toBe(modelName)
                     expect(result[0].Model).toBeTruthy()
                     expect(result[0].dbName).toBe(dbName)
                     expect(result[0].schema).toBeTruthy()
-                    expect(createModelSpy.calledOnce).toBe(true)
-                    expect(createModelSpy.calledWith(modelName, schema, dbName)).toBe(true)
+                    expect(createModelSpy.calledOnceWithExactly({
+                        modelName, schema, dbName
+                    })).toBe(true)
                 })
     
                 it('should return an empty array because no model can be found', async() => {
                     const expression = `${process.cwd()}/**/*.modelNotFound.test.ts`
-                    const result = await (<any>modelManager).globModels(expression)
+                    const result = await Object.getPrototypeOf(modelManager).globModels(expression)
                     expect(result).toEqual([])
                 })
             })
