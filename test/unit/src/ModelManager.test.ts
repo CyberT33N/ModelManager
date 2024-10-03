@@ -24,8 +24,7 @@ import mongoose, {
 
 // ==== CODE ====
 import ModelManager, {
-    type GenerateMongooseSchemaType,
-    type ModelInterface
+    type IModel
 } from '@/src/ModelManager'
 
 // ==== CLASSES ====
@@ -47,7 +46,7 @@ describe('ModelManager', () => {
     const userSchema = new mongoose.Schema<IUser>(schema)
     const UserModel = mongoose.model<IUser>('User', userSchema)
 
-    const modelDetails = {
+    const modelDetails: IModel<mongoose.SchemaDefinition<IUser>> = {
         modelName: 'Model1',
         Model: UserModel,
         dbName: 'test',

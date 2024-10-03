@@ -17,8 +17,6 @@ import mongoose from 'mongoose'
 
 import { BaseError } from 'error-manager-helper'
 
-import type { RawDocType } from './ModelManager'
-
 /**
  * A utility class for managing MongoDB connections and schemas.
  */
@@ -58,12 +56,12 @@ class MongooseUtils {
     /**
      * Creates a Mongoose schema for a given model.
      * @template TMongooseSchema - The type of the Mongoose schema.
-     * @param {RawDocType<TMongooseSchema>} schema - The schema definition for the model.
+     * @param {mongoose.SchemaDefinition<TMongooseSchema>} schema - The schema definition for the model.
      * @param {string} name - The name of the collection in MongoDB.
      * @returns A Mongoose Schema object.
      */
     public static createSchema<TMongooseSchema>(
-        schema: RawDocType<TMongooseSchema>,
+        schema: mongoose.SchemaDefinition<TMongooseSchema>,
         name: string
     ): mongoose.Schema<TMongooseSchema> {
         const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema, { collection: name })
@@ -114,12 +112,12 @@ class MongooseUtils {
     /**
      * Creates a model for a specified schema and collection name.
      * @template TMongooseSchema - The type of the Mongoose schema.
-     * @param {TMongooseSchema} schema - The schema definition for the model.
+     * @param {mongoose.SchemaDefinition<TMongooseSchema>} schema - The schema definition for the model.
      * @param {string} name - The name of the model and collection.
      * @returns A Promise that resolves to the Mongoose Model.
      */
     public async createModel<TMongooseSchema>(
-        schema: RawDocType<TMongooseSchema>,
+        schema: mongoose.SchemaDefinition<TMongooseSchema>,
         name: string
     ): Promise< mongoose.Model<TMongooseSchema> > {
         const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, name)
