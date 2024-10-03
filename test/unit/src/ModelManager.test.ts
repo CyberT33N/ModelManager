@@ -38,10 +38,21 @@ describe('ModelManager', () => {
         avatar: String
     }
 
-    type TMongooseSchema = GenerateMongooseSchemaType<typeof schema>;
-    
-    const userSchema = new mongoose.Schema<TMongooseSchema>(schema)
-    const UserModel = mongoose.model<TMongooseSchema>('User', userSchema)
+    interface IUser {
+        name: string
+        email: string
+        avatar: string
+    }
+
+    const userSchema = new mongoose.Schema<IUser>(schema)
+    const UserModel = mongoose.model<IUser>('User', userSchema)
+
+    const modelDetails = {
+        modelName: 'Model1',
+        Model: UserModel,
+        dbName: 'test',
+        schema
+    }
 
     describe('getInstance()', () => {
         let initStub: sinon.SinonStub
@@ -108,12 +119,7 @@ describe('ModelManager', () => {
                 })
 
                 it.only('should not initialize models if already initialized', async() => {
-                    const expectedModels: ModelInterface<TMongooseSchema>[] = [{
-                        modelName: 'Model1',
-                        Model: UserModel,
-                        dbName: 'test',
-                        schema
-                    }]
+                    const expectedModels = [modelDetails]
 
                     modelManager.models = expectedModels
                     await Object.getPrototypeOf(modelManager).init()

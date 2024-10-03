@@ -14,11 +14,7 @@
 
 import _ from 'lodash'
 import { glob } from 'glob'
-import mongoose, {
-    type Model,
-    type SchemaDefinition,
-    type SchemaDefinitionType
-} from 'mongoose'
+import mongoose from 'mongoose'
 
 import MongooseUtils from './MongooseUtils'
 
@@ -98,7 +94,9 @@ export type SchemaValue<T> = T extends { type: infer U } ? MongooseSchemaType<U>
  * // }
  * ```
  */
-export type GenerateMongooseSchemaType<Schema> = {
+export type RawDocType<TSchema> = mongoose.SchemaDefinition<TSchema>
+
+export type GenerateMongooseSchemaType<Schema extends mongoose.SchemaDefinition> = {
     [K in keyof Schema]: SchemaValue<Schema[K]>
 }
 
@@ -112,7 +110,7 @@ export interface ModelDetailsInterface<TSchema> {
     /** The name of the database where the model is stored. */
     dbName: string;
     /** The schema used for the model. */
-    schema: SchemaDefinition<SchemaDefinitionType<TSchema>>;
+    schema: RawDocType<TSchema>;
 }
 
 /**
@@ -121,7 +119,7 @@ export interface ModelDetailsInterface<TSchema> {
  */
 export interface ModelInterface<TSchema> extends ModelDetailsInterface<TSchema> {
     /** The Mongoose Model instance. */
-    Model: Model<TSchema>;
+    Model: mongoose.Model<TSchema>;
 }
 
 
@@ -130,12 +128,12 @@ export interface ModelInterface<TSchema> extends ModelDetailsInterface<TSchema> 
  * Manages the dynamic loading and initialization of Mongoose models.
  */
 class ModelManager {
-    /** Singleton instance of the ModelMaSchemaDefinition<SchemaDefinitionType<TMongooseSchema>>ager. */
+    /** Singleton instance of the ModelMaSchemanager. */
     // eslint-disable-next-line no-use-before-define
     private static instance: ModelManager | null = null
 
     /** A list of all loaded models. */
-    public models: ModelInterface<GenerateMongooseSchemaType<SchemaDefinition>>[] = []
+    public models: ModelInterface<any>[] = []
 
     /**
      * Private constructor to prevent direct instantiation.
@@ -174,14 +172,14 @@ class ModelManager {
      * 
      * @private
      * @param {string} expression - The glob pattern used to find model files.
-     * @returns {Promise<ModelInterface<GenerateMongooseSchemaType<SchemaDefinition>>[]>} 
+     * @returns {Promise<ModelInterface[]>} 
      * - A promise that resolves to an array of typed Mongoose models.
      */
     private async globModels(
         expression: string
-    ): Promise<ModelInterface<GenerateMongooseSchemaType<SchemaDefinition>>[]> {
+    ): Promise< ModelInterface<RawDocType<{}>>[] > {
         const modelPaths = await glob(expression)
-        const models: ModelInterface<GenerateMongooseSchemaType<SchemaDefinition>>[] = []
+        const models: ModelInterface<RawDocType<{}>>[] = []
 
         for (const path of modelPaths) {
             // Ignore Webpack bundling during dynamic import
@@ -216,7 +214,7 @@ class ModelManager {
      * Returns all loaded Mongoose models.
      * @returns A list of all loaded Mongoose models.
      */
-    public getModels(): ModelInterface<GenerateMongooseSchemaType<SchemaDefinition>>[] {
+    public getModels(): ModelInterface<RawDocType<{}>>[] {
         return this.models
     }
 
@@ -225,7 +223,7 @@ class ModelManager {
      * @param name - The name of the model.
      * @returns The Mongoose model or `undefined` if not found.
      */
-    public getModel(name: string): ModelInterface<GenerateMongooseSchemaType<SchemaDefinition>> | undefined {
+    public getModel(name: string): ModelInterface<RawDocType<{}>> | undefined {
         return this.models.find(model => model.modelName === name)
     }
 
@@ -239,7 +237,7 @@ class ModelManager {
         modelName,
         schema,
         dbName
-    }: ModelDetailsInterface<TMongooseSchema>): Promise<Model<TMongooseSchema>> {
+    }: ModelDetailsInterface<TMongooseSchema>): Promise< mongoose.Model<TMongooseSchema> > {
         const mongooseUtils = await MongooseUtils.getInstance(dbName)
         const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
         

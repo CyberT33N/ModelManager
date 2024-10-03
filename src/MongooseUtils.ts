@@ -13,15 +13,11 @@
 ███████████████████████████████████████████████████████████████████████████████
 */
 
-import mongoose, {
-    type Connection,
-    Schema,
-    type Model,
-    type SchemaDefinition,
-    type SchemaDefinitionType
-} from 'mongoose'
+import mongoose from 'mongoose'
 
 import { BaseError } from 'error-manager-helper'
+
+import type { RawDocType } from './ModelManager'
 
 /**
  * A utility class for managing MongoDB connections and schemas.
@@ -62,15 +58,15 @@ class MongooseUtils {
     /**
      * Creates a Mongoose schema for a given model.
      * @template TMongooseSchema - The type of the Mongoose schema.
-     * @param {SchemaDefinition<SchemaDefinitionType<TMongooseSchema>>} schema - The schema definition for the model.
+     * @param {RawDocType<TMongooseSchema>} schema - The schema definition for the model.
      * @param {string} name - The name of the collection in MongoDB.
      * @returns A Mongoose Schema object.
      */
     public static createSchema<TMongooseSchema>(
-        schema: SchemaDefinition<SchemaDefinitionType<TMongooseSchema>>,
+        schema: RawDocType<TMongooseSchema>,
         name: string
     ): mongoose.Schema<TMongooseSchema> {
-        const mongooseSchema = new Schema<TMongooseSchema>(schema, { collection: name })
+        const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema, { collection: name })
         return mongooseSchema
     }
 
@@ -107,7 +103,7 @@ class MongooseUtils {
      * If the connection is not established, it will initialize it first.
      * @returns A Promise that resolves to the MongoDB connection.
      */
-    public async getConnection(): Promise<Connection> {
+    public async getConnection(): Promise< mongoose.Connection > {
         if (!this.conn) {
             await this.init()
         }
@@ -118,14 +114,14 @@ class MongooseUtils {
     /**
      * Creates a model for a specified schema and collection name.
      * @template TMongooseSchema - The type of the Mongoose schema.
-     * @param {SchemaDefinition<SchemaDefinitionType<TMongooseSchema>>} schema - The schema definition for the model.
+     * @param {TMongooseSchema} schema - The schema definition for the model.
      * @param {string} name - The name of the model and collection.
      * @returns A Promise that resolves to the Mongoose Model.
      */
     public async createModel<TMongooseSchema>(
-        schema: SchemaDefinition<SchemaDefinitionType<TMongooseSchema>>,
+        schema: RawDocType<TMongooseSchema>,
         name: string
-    ): Promise<Model<TMongooseSchema>> {
+    ): Promise< mongoose.Model<TMongooseSchema> > {
         const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, name)
         const conn = await this.getConnection()
 

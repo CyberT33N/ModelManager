@@ -50,7 +50,15 @@ export default tseslint.config(
             semi: [2, 'never'],
             'new-cap': 0,
             'one-var': 0,
-            'guard-for-in': 0
+            'guard-for-in': 0,
+
+            // Hinzufügen der Regel, um {} Typen zu erlauben
+             '@typescript-eslint/ban-types': ['error', {
+                types: {
+                    '{}': false // Deaktiviert die Einschränkung für den leeren Objekttyp
+                },
+                extendDefaults: true
+            }]
         }
     },
     ...tseslint.configs.recommended
