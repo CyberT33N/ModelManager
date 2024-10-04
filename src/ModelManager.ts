@@ -22,7 +22,7 @@ import MongooseUtils from './MongooseUtils'
  * Interface representing the details of a Mongoose model.
  * @template TSchema - The type of the document.
  */
-export interface IModelDetails<TSchema> {
+export interface IModelCore<TSchema> {
     /** The name of the model. */
     modelName: string;
     /** The name of the database where the model is stored. */
@@ -35,7 +35,7 @@ export interface IModelDetails<TSchema> {
  * Interface representing a Mongoose model along with additional metadata.
  * @template TSchema - The type of the document.
  */
-export interface IModel<TSchema> extends IModelDetails<TSchema> {
+export interface IModel<TSchema> extends IModelCore<TSchema> {
     /** The Mongoose Model instance. */
     Model: mongoose.Model<any>;
 }
@@ -153,7 +153,7 @@ class ModelManager {
         modelName,
         schema,
         dbName
-    }: IModelDetails<TMongooseSchema>): Promise< mongoose.Model<TMongooseSchema> > {
+    }: IModelCore<TMongooseSchema>): Promise< mongoose.Model<TMongooseSchema> > {
         const mongooseUtils = await MongooseUtils.getInstance(dbName)
         const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
         

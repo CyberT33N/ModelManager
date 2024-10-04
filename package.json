@@ -12,10 +12,10 @@
   "scripts": {
     "build": "npx eslint src && tsup",
     "test-only": "bash test-only.sh",
-    "test": "vitest --coverage --disable-console-intercept --watch=false",
-    "test:watch": "vitest --watch",
-    "test:integration": "vitest run --testTimeout=300000 --coverage --disable-console-intercept --watch=false --config vitest.integration.config.ts",
-    "test:unit": "vitest run --testTimeout=300000 --coverage --disable-console-intercept --watch=false --config vitest.unit.config.ts"
+    "test": "vitest --typecheck --coverage --disable-console-intercept --watch=false",
+    "test:watch": "vitest --typecheck --watch",
+    "test:integration": "vitest run --typecheck --testTimeout=300000 --coverage --disable-console-intercept --watch=false --config vitest.integration.config.ts",
+    "test:unit": "vitest run --typecheck --testTimeout=300000 --coverage --disable-console-intercept --watch=false --config vitest.unit.config.ts"
   },
   "repository": {
     "type": "git",
@@ -57,7 +57,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "error-manager-helper": "^3.24.0",
+    "error-manager-helper": "^4.0.0",
     "glob": "^10.3.15",
     "lodash": "^4.17.21",
     "mongoose": "^8.7.0"

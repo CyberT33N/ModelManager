@@ -14,7 +14,9 @@
 */
 
 // ==== VITEST ====
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import {
+    describe, it, expect, beforeEach, afterEach, beforeAll
+} from 'vitest'
 
 // ==== DEPENDENCIES ====
 import sinon from 'sinon'
@@ -24,34 +26,32 @@ import mongoose, {
 
 // ==== CODE ====
 import ModelManager, {
-    type IModel
+    type IModel, type IModelCore
 } from '@/src/ModelManager'
 
 // ==== CLASSES ====
 import MongooseUtils from '@/src/MongooseUtils'
 
-describe('ModelManager', () => {
-    const schema = {
-        name: { type: String, required: true },
-        email: { type: String, required: true },
-        avatar: String
-    }
+describe('ModelManager',() => {
+    let modelDetails: IModel<any> 
 
-    interface IUser {
-        name: string
-        email: string
-        avatar: string
-    }
-
-    const userSchema = new mongoose.Schema<IUser>(schema)
-    const UserModel = mongoose.model<IUser>('User', userSchema)
-
-    const modelDetails: IModel<mongoose.SchemaDefinition<IUser>> = {
-        modelName: 'Model1',
-        Model: UserModel,
-        dbName: 'test',
-        schema
-    }
+    beforeAll(async () => {
+        const modelDetail: IModelCore<any> = await import('@/test/models/Test.model.mjs')
+        const { modelName, dbName, schema } = modelDetail
+    
+        // Generate the Mongoose schema type
+        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+    
+        const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema)
+        const Model = mongoose.model<TMongooseSchema>(modelName, mongooseSchema)
+    
+        modelDetails = {
+            modelName,
+            Model,
+            dbName,
+            schema
+        } as IModel<TMongooseSchema>
+    })
 
     describe('getInstance()', () => {
         let initStub: sinon.SinonStub
@@ -117,14 +117,14 @@ describe('ModelManager', () => {
                     expect(modelManager.models).toEqual([])
                 })
 
-                it.only('should not initialize models if already initialized', async() => {
-                    const expectedModels = [modelDetails]
+                it('should not initialize models if already initialized', async() => {
+                    modelManager.models = [modelDetails]
 
-                    modelManager.models = expectedModels
-                    await Object.getPrototypeOf(modelManager).init()
-
-                    expect(globModelsStub.calledOnce).toBe(false)
-                    expect(modelManager.models).toEqual(expectedModels)
+                    const initMethod: Function = Reflect.get(modelManager, 'init')
+                    await initMethod.call(modelManager)
+                    
+                    expect(globModelsStub.called).toBe(false)
+                    expect(modelManager.models).toEqual([modelDetails])
                 })
             })
 
@@ -141,18 +141,26 @@ describe('ModelManager', () => {
             
                 it('should return an array of globbed models', async() => {
                     const expression = `${process.cwd()}/test/models/**/*.model.mjs`
-                    const result = await Object.getPrototypeOf(modelManager).globModels(expression)
-                    
-                    const modelDetails = await import('@/test/models/Test.model.mjs')
+                    const globbedModels = await Object.getPrototypeOf(modelManager).globModels(expression)
+                    const globbedModel = globbedModels.at(0)
+
                     const { modelName, dbName, schema } = modelDetails
-    
-                    expect(result[0].modelName).toBe(modelName)
-                    expect(result[0].Model).toBeTruthy()
-                    expect(result[0].dbName).toBe(dbName)
-                    expect(result[0].schema).toBeTruthy()
+                    
+                    // ==== SPIES ====
                     expect(createModelSpy.calledOnceWithExactly({
                         modelName, schema, dbName
                     })).toBe(true)
+
+                    // ==== EXPECTS ====
+                    expect(globbedModel.modelName).toBe(modelName)
+                    expect(globbedModel.dbName).toBe(dbName)
+                    expect(globbedModel.schema).toEqual(schema)
+
+                    expect(globbedModel.Model.modelName).toBe(modelName)
+                    expect(globbedModel.Model.db.name).toBe(dbName)
+
+                    const modelInstance = new globbedModel.Model()
+                    expect(modelInstance).toBeInstanceOf(mongoose.Model)
                 })
     
                 it('should return an empty array because no model can be found', async() => {
