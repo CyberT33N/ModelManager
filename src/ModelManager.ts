@@ -103,7 +103,7 @@ class ModelManager {
             const { modelName, dbName, schema } = modelDetails
 
             // Generate the Mongoose schema type
-            type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>;
+            type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
 
             const Model = await this.createModel<TMongooseSchema>({
                 modelName,

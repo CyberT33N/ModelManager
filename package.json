@@ -45,6 +45,7 @@
     "dotenv": "^16.4.5",
     "eslint": "^9.10.0",
     "globals": "^15.2.0",
+    "mongodb-memory-server": "^10.0.1",
     "sinon": "^18.0.0",
     "ts-node": "^10.9.2",
     "tsup": "^8.0.2",
