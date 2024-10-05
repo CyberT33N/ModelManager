@@ -13,23 +13,20 @@
 ███████████████████████████████████████████████████████████████████████████████
 */
 
-// ==== VITEST ====
+// ==== DEPENDENCIES ====
+import sinon from 'sinon'
+import mongoose from 'mongoose'
 import {
     describe, it, expect, beforeEach, afterEach, beforeAll
 } from 'vitest'
 
-// ==== DEPENDENCIES ====
-import sinon from 'sinon'
-import mongoose from 'mongoose'
-import { MongoMemoryServer } from 'mongodb-memory-server'
+// ==== INTERNAL ====
+import MongooseUtils from '@/src/MongooseUtils'
 
-// ==== CODE ====
+// ==== CODE TO TEST ====
 import ModelManager, {
     type IModel, type IModelCore
 } from '@/src/ModelManager'
-
-// ==== CLASSES ====
-import MongooseUtils from '@/src/MongooseUtils'
 
 describe('[UNIT TEST] - src/ModelManager.ts',() => {
     let modelDetails: IModel<any> 
@@ -44,13 +41,8 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
         type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
     
         const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema)
-       
-        const mongoServer: MongoMemoryServer = await MongoMemoryServer.create({
-            instance: { dbName }
-        })
-
-        const conn = await mongoose.createConnection(mongoServer.getUri(), { dbName }).asPromise()
-        const Model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
+        // MongooseUtils.createModel() will use a connection model so normally we should use a connection model here aswell. But we are stubbing the createModel method so we can use a normal model here.
+        const Model = mongoose.model<TMongooseSchema>(modelName, mongooseSchema)
     
         modelDetails = {
             modelName,
@@ -63,12 +55,14 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
     beforeEach(async() => {
         // Reset instance before creating a new one
         (<any>ModelManager).instance = null
+        
 
         initStub = sinon.stub(
             ModelManager.prototype, 'init' as keyof ModelManager
         ).resolves()
 
         modelManager = await ModelManager.getInstance()
+        expect(modelManager).toBeInstanceOf(ModelManager)
     })
 
     afterEach(() => {
@@ -100,10 +94,7 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
 
                     globModelsStub = sinon.stub(
                         ModelManager.prototype, 'globModels' as keyof ModelManager
-                    ).resolves([])
-
-                    // Reset models because of beforeEach above
-                    modelManager.models = []
+                    ).resolves()
                 })
 
                 afterEach(() => {
@@ -130,7 +121,7 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
             })
 
             describe('globModels', () => {
-                let createModelStub: sinon.SinonSpy
+                let createModelStub: sinon.SinonStub
 
                 beforeEach(() => {
                     createModelStub = sinon.stub(ModelManager.prototype, 'createModel')
@@ -143,11 +134,11 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
             
                 it('should return an array of globbed models', async() => {
                     const expression = `${process.cwd()}/test/models/**/*.model.mjs`
+
                     const globbedModels = await Object.getPrototypeOf(modelManager)
                         .globModels(expression)
 
                     const globbedModel = globbedModels.at(0)
-
                     const { modelName, dbName, schema, Model } = modelDetails
                     
                     // ==== SPIES ====
@@ -195,15 +186,11 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
             })
 
             describe('createModel()', () => {
-                let modelManager: ModelManager
                 let mongooseUtilsGetInstanceStub: sinon.SinonStub
                 let mongooseUtilsCreateModelStub: sinon.SinonStub
                 let modelCreateIndexesStub: sinon.SinonStub
             
                 beforeEach(async() => {
-                    // const mongooseUtils = await MongooseUtils.getInstance('test')
-                    modelManager = await ModelManager.getInstance()
-            
                     mongooseUtilsCreateModelStub = sinon.stub().returns(modelDetails.Model)
 
                     mongooseUtilsGetInstanceStub = sinon.stub(MongooseUtils, 'getInstance').resolves({

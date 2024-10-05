@@ -55,6 +55,7 @@ class MongooseUtils {
 
     /**
      * Creates a Mongoose schema for a given model.
+     * https://mongoosejs.com/docs/guide.html#options
      * @template TMongooseSchema - The type of the Mongoose schema.
      * @param {mongoose.SchemaDefinition<TMongooseSchema>} schema - The schema definition for the model.
      * @param {string} name - The name of the collection in MongoDB.
@@ -79,7 +80,7 @@ class MongooseUtils {
 
         try {
             this.conn = await mongoose.createConnection(this.connectionString).asPromise()
-        } catch (e: unknown) {
+        } catch (e) {
             throw new BaseError(
                 '[ModelManager] - Error while initializing connection with MongoDB',
                 e as Error
