@@ -17,6 +17,7 @@ import { glob } from 'glob'
 import mongoose from 'mongoose'
 
 import MongooseUtils from './MongooseUtils'
+import Modelutils from './ModelUtils'
 
 /**
  * Interface representing the details of a Mongoose model.
@@ -41,10 +42,11 @@ export interface IModel<TSchema> extends IModelCore<TSchema> {
 }
 
 /**
+ * @extends Modelutils
  * A manager class for all Mongoose models in the application.
  * Manages the dynamic loading and initialization of Mongoose models.
  */
-class ModelManager {
+export default class ModelManager extends Modelutils {
     /** Singleton instance of the ModelMaSchemanager. */
     // eslint-disable-next-line no-use-before-define
     private static instance: ModelManager | null = null
@@ -56,7 +58,9 @@ class ModelManager {
      * Private constructor to prevent direct instantiation.
      * Access is provided via the `getInstance` method.
      */
-    private constructor() {}
+    private constructor() {
+        super()
+    }
 
     /**
      * Returns the singleton instance of the ModelManager.
@@ -162,5 +166,3 @@ class ModelManager {
         return Model
     }
 }
-
-export default ModelManager

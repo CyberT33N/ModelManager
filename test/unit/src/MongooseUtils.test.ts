@@ -31,32 +31,36 @@ import {
 
 // ==== INTERNAL ====
 import type { IModel, IModelCore } from '@/src/ModelManager'
+import ModelUtils from '@/src/ModelUtils'
 
 // ==== CODE TO TEST ====
 import MongooseUtils from '@/src/MongooseUtils'
 
 describe('MongooseUtils', () => {
+    let mongoServer: MongoMemoryServer
     let modelDetails: IModel<any> 
     let mongooseUtils: MongooseUtils
+    let dbName: string
+    let modelName: string
+    let schema: mongoose.SchemaDefinition<any>
+    let mongooseSchema: mongoose.Schema<any>
+    let conn: mongoose.Connection
+    let Model: mongoose.Model<any>
 
-    const dbName = 'test'
+    const docData = { name: 'test', decimals: 69n }
 
     beforeAll(async () => {
         const modelDetail: IModelCore<any> = await import('@/test/models/Test.model.mjs')
-        const { modelName, dbName, schema } = modelDetail
-    
+        ;({ dbName, modelName, schema } = modelDetail)
+
         // Generate the Mongoose schema type
         type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-    
-        const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema)
+        ;mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema)
        
-        const mongoServer: MongoMemoryServer = await MongoMemoryServer.create({
-            instance: { dbName }
-        })
+        ;({ Model, mongoServer, conn } = await ModelUtils.createMemoryModel(modelDetail))
+        const connUri = mongoServer.getUri()
+        console.log(`[MongoDB] - Connection URI: ${connUri}`)
 
-        const conn = await mongoose.createConnection(mongoServer.getUri(), { dbName }).asPromise()
-        const Model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
-    
         modelDetails = {
             modelName,
             Model,
@@ -66,22 +70,27 @@ describe('MongooseUtils', () => {
     })
 
     beforeEach(() => {
-        (<any>MongooseUtils).instances = new Map()
+        Reflect.set(MongooseUtils, 'instances', new Map())
+  
         mongooseUtils = MongooseUtils.getInstance(dbName)
         expect(mongooseUtils).toBeInstanceOf(MongooseUtils)
+    })
+
+    afterEach(async () => {
+        await mongoServer.stop()
     })
 
     describe('getInstance()', () => {
         describe('[EXISTING INSTANCE]', () => {
             beforeEach(() => {
-                ;(<any>mongooseUtils).changed = true
+                Reflect.set(mongooseUtils, 'changed', true)
             })
              
             it('should get existing instance for db', async() => {
                 const mongooseUtils2 = MongooseUtils.getInstance(dbName)
                 expect(mongooseUtils2).toEqual(mongooseUtils)
 
-                expect((<any>MongooseUtils).instances.size).toBe(1)
+                expect(Reflect.get(MongooseUtils, 'instances').size).toBe(1)
                 
                 expect(Reflect.get(mongooseUtils2, 'changed')).toBe(true)
                 expect(Reflect.get(mongooseUtils2, 'dbName')).toBe(dbName)
@@ -100,14 +109,14 @@ describe('MongooseUtils', () => {
 
             it('should create new instance if instance for db not exists', async() => {
                 // ==== INSTANCE #1 ====
-                expect((<any>MongooseUtils).instances.size).toBe(1)
+                expect(Reflect.get(MongooseUtils, 'instances').size).toBe(1)
 
                 // ==== INSTANCE #2 ====
                 const mongooseUtils2 = MongooseUtils.getInstance(dbName2)
                 expect(mongooseUtils2).toBeInstanceOf(MongooseUtils)
                 expect(mongooseUtils2).not.toEqual(mongooseUtils)
 
-                expect((<any>MongooseUtils).instances.size).toBe(2)
+                expect(Reflect.get(MongooseUtils, 'instances').instances.size).toBe(2)
             })
         })
     })
@@ -126,8 +135,6 @@ describe('MongooseUtils', () => {
                 })
 
                 it('should create a mongoose schema', () => {
-                    const { modelName, schema } = modelDetails
-
                     // Generate the Mongoose schema type
                     type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
                 
@@ -140,11 +147,9 @@ describe('MongooseUtils', () => {
 
         describe('[PRIVATE]', () => {
             describe('init()', () => {
-                let createConnectionStub: sinon.SinonStub
                 let updateConnectionStringStub: sinon.SinonStub
  
                 beforeEach(() => {
-                    createConnectionStub = sinon.stub(mongoose, 'createConnection')
                     updateConnectionStringStub = sinon.stub(
                         MongooseUtils.prototype, 'updateConnectionString' as keyof MongooseUtils
                     ).resolves()
@@ -152,18 +157,23 @@ describe('MongooseUtils', () => {
 
                 afterEach(() => {
                     updateConnectionStringStub.restore()
-                    createConnectionStub.restore()
                 })
 
                 describe('[ERROR]', () => {
+                    let createConnectionStub: sinon.SinonStub
+
                     const expectedErrorMessage = 'Connection error'
 
                     beforeEach(() => {
                         const error = new Error(expectedErrorMessage)
 
-                        createConnectionStub.returns({
+                        createConnectionStub = sinon.stub(mongoose, 'createConnection').returns({
                             asPromise: () => Promise.reject(error)
                         } as unknown as mongoose.Connection)
+                    })
+
+                    afterEach(() => {
+                        createConnectionStub.restore()
                     })
 
                     it('should throw an error when initializing connection with mongoose fails', async () => {
@@ -189,99 +199,137 @@ describe('MongooseUtils', () => {
                 })
 
                 describe('[SUCCESS]', () => {
+                    let createConnectionSpy: sinon.SinonSpy
+                    let mongoUri: string
+
                     beforeEach(() => {
-                        createConnectionStub.returns({
-                            asPromise: () => Promise.resolve({})
-                        })
+                        createConnectionSpy = sinon.spy(mongoose, 'createConnection')
+
+                        mongoUri = mongoServer.getUri()
+                        Reflect.set(mongooseUtils, 'connectionString', mongoUri)
                     })
 
-                    it('should initialize connection with mongoose', async function() {
-                        await (<any>mongooseUtils).init()
+                    afterEach(async () => {
+                        createConnectionSpy.restore()
+                    })
 
-                        expect(createConnectionStub.calledOnce).toBeTruthy()
+                    it.only('should initialize connection with mongoose', async () => {
+                        const initMethod: Function = Reflect.get(mongooseUtils, 'init')
+                        await initMethod.call(mongooseUtils)
+
+                        // ==== STUBS ====
                         expect(updateConnectionStringStub.calledOnce).toBeTruthy()
-                        expect(createConnectionStub.calledWith(
-                            Reflect.get(mongooseUtils, 'connectionString')
-                        )).toBe(true)
-                        expect(Reflect.get(mongooseUtils, 'conn')).toBeInstanceOf(mongoose.Connection)
+                        
+                        expect(createConnectionSpy.calledOnceWithExactly(mongoUri)).toBe(true)
+
+                        // ==== CONNECTION ====
+                        const conn: mongoose.Connection = Reflect.get(mongooseUtils, 'conn')
+                        expect(conn.readyState).toBe(1)
+                        expect(conn).toBeInstanceOf(mongoose.Connection)
+                        
+                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+                        const Model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
+
+                        // Test if the created connection model is working
+                        const doc = new Model(docData)
+                        await doc.save()
+
+                        const foundDoc = await Model.findOne(docData)
+                        expect(foundDoc).toEqual(expect.objectContaining(docData))
                     })
                 })
             })
 
             describe('updateConnectionString()', () => {
+                const dbName = 'newDbName'
+
+                beforeEach(() => {
+                    Reflect.set(mongooseUtils, 'dbName', dbName)
+                })
+
                 it('should update the connection string with the correct database name', () => {
-                    const expectedConnectionString = `${process.env.MONGODB_CONNECTION_STRING}/${dbName}`
-    
-                    const expectedDbName = 'newDB'
-                    ;(<any>mongooseUtils).dbName = expectedDbName
-                    ;(<any>mongooseUtils).updateConnectionString()
+                    const method: Function = Reflect.get(mongooseUtils, 'updateConnectionString')
+                    method.call(mongooseUtils)
 
                     const newConnectionString = Reflect.get(mongooseUtils, 'connectionString')
+
                     const urlObj = new URL(newConnectionString)
 
-                    expect(urlObj.pathname).toBe(`/${expectedDbName}`)
+                    expect(urlObj.pathname).toBe(`/${dbName}`)
+                    expect(urlObj.toString()).toBe(newConnectionString)
                 })
             })
         })
 
         describe('[PUBLIC]', () => {
             describe('getConnection', () => {
-                let initSpy: sinon.SinonSpy
+                let initStub: sinon.SinonStub
 
-                beforeEach(async() => {
-                    initSpy = sinon.spy((<any>MongooseUtils).prototype, 'init')
-                    await (<any>mongooseUtils).init()
+                beforeEach(() => {
+                    initStub = sinon.stub(MongooseUtils.prototype, 'init' as keyof MongooseUtils)
+                        .resolves()
                 })
-       
+
                 afterEach(() => {
-                    initSpy.restore()
+                    initStub.restore()
                 })
        
-                it('should return a valid existing mongoose connection', async() => {
-                    const conn = await mongooseUtils.getConnection()
-                    expect(initSpy.calledTwice).toBe(false)
-                    expect(conn).toBeInstanceOf(mongoose.Connection)
+                describe('[NEW CONNECTION]', () => {
+                    it('should call init method because conn is null', async() => {
+                        const conn = await mongooseUtils.getConnection()
+                        expect(conn).toBe(null)
+                        expect(initStub.calledOnce).toBe(true)
+                    })
                 })
 
-                it('should return a valid mongoose connection by creating one', async() => {
-                    delete (<any>mongooseUtils).conn
+                describe('[EXISTING CONNECTION]', () => {
+                    it('should not call init method because conn not null', async() => {
+                        const expectedConn = {} as mongoose.Connection
+                        Reflect.set(mongooseUtils, 'conn', expectedConn)
 
-                    const conn = await mongooseUtils.getConnection()
-                    expect(initSpy.calledTwice).toBe(true)
-                    expect(conn).toBeInstanceOf(mongoose.Connection)
+                        const conn = await mongooseUtils.getConnection()
+                        expect(initStub.called).toBe(false)
+                        expect(conn).toEqual(expectedConn)
+                    })
                 })
             })
 
             describe('createModel', () => {
-                let createSchemaSpy: sinon.SinonSpy
-                let getConnectionSpy: sinon.SinonSpy
+                let createSchemaStub: sinon.SinonStub
+                let getConnectionStub: sinon.SinonStub
 
                 beforeEach(() => {
-                    createSchemaSpy = sinon.spy(MongooseUtils, 'createSchema')
-                    getConnectionSpy = sinon.spy((<any>MongooseUtils).prototype, 'getConnection')
+                    createSchemaStub = sinon.stub(
+                        MongooseUtils, 'createSchema'
+                    ).returns(mongooseSchema)
+                        
+                    getConnectionStub = sinon.stub(
+                        MongooseUtils.prototype, 'getConnection' as keyof MongooseUtils
+                    ).resolves(Promise.resolve(conn))
                 })
       
                 afterEach(() => {
-                    createSchemaSpy.restore()
-                    getConnectionSpy.restore()
+                    createSchemaStub.restore()
+                    getConnectionStub.restore()
                 })
                
                 it('should create a mongoose model', async() => {
-                    const schema = {
-                        name: String,
-                        age: Number,
-                        email: String
-                    }
-
-                    const name = 'User'
-
-                    const Model = await mongooseUtils.createModel(schema, name)
+                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+                    const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
 
                     // ==== SPIES ====
-                    expect(createSchemaSpy.calledOnce).toBe(true)
-                    expect(getConnectionSpy.calledOnce).toBe(true)
+                    expect(createSchemaStub.calledOnceWithExactly(schema, modelName)).toBe(true)
+                    expect(getConnectionStub.calledOnce).toBeTruthy()
 
-                    expect(Model.modelName).toBe(name)
+                    // ==== MODEL ====
+                    expect(Model.modelName).toBe(modelName)
+
+                    // Test if the created connection model is working
+                    const doc = new Model(docData)
+                    await doc.save()
+
+                    const foundDoc = await Model.findOne(docData)
+                    expect(foundDoc).toEqual(expect.objectContaining(docData))
                 })
             })
         })

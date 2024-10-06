@@ -54,8 +54,7 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
 
     beforeEach(async() => {
         // Reset instance before creating a new one
-        (<any>ModelManager).instance = null
-        
+        Reflect.set(ModelManager, 'instance', null)
 
         initStub = sinon.stub(
             ModelManager.prototype, 'init' as keyof ModelManager

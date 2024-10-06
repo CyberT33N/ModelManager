@@ -58,7 +58,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "error-manager-helper": "^4.0.0",
+    "error-manager-helper": "^4.5.0",
     "glob": "^10.3.15",
     "lodash": "^4.17.21",
     "mongoose": "^8.7.0"
