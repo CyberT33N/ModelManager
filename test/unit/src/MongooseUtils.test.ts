@@ -21,7 +21,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server'
 import {
     describe, it, assert,
     expect, expectTypeOf,
-    beforeEach, afterEach, beforeAll
+    beforeEach, afterEach, beforeAll, afterAll
 } from 'vitest'
 
 import {
@@ -36,7 +36,7 @@ import ModelUtils from '@/src/ModelUtils'
 // ==== CODE TO TEST ====
 import MongooseUtils from '@/src/MongooseUtils'
 
-describe('MongooseUtils', () => {
+describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
     let mongoServer: MongoMemoryServer
     let modelDetails: IModel<any> 
     let mongooseUtils: MongooseUtils
@@ -69,15 +69,16 @@ describe('MongooseUtils', () => {
         } as IModel<TMongooseSchema>
     })
 
+    afterAll(async () => {
+        // Calling stop() will close all connections from each created instance
+        await mongoServer.stop()
+    })
+
     beforeEach(() => {
         Reflect.set(MongooseUtils, 'instances', new Map())
   
         mongooseUtils = MongooseUtils.getInstance(dbName)
         expect(mongooseUtils).toBeInstanceOf(MongooseUtils)
-    })
-
-    afterEach(async () => {
-        await mongoServer.stop()
     })
 
     describe('getInstance()', () => {
@@ -116,7 +117,7 @@ describe('MongooseUtils', () => {
                 expect(mongooseUtils2).toBeInstanceOf(MongooseUtils)
                 expect(mongooseUtils2).not.toEqual(mongooseUtils)
 
-                expect(Reflect.get(MongooseUtils, 'instances').instances.size).toBe(2)
+                expect(Reflect.get(MongooseUtils, 'instances').size).toBe(2)
             })
         })
     })
@@ -213,7 +214,7 @@ describe('MongooseUtils', () => {
                         createConnectionSpy.restore()
                     })
 
-                    it.only('should initialize connection with mongoose', async () => {
+                    it('should initialize connection with mongoose', async () => {
                         const initMethod: Function = Reflect.get(mongooseUtils, 'init')
                         await initMethod.call(mongooseUtils)
 
@@ -227,6 +228,7 @@ describe('MongooseUtils', () => {
                         expect(conn.readyState).toBe(1)
                         expect(conn).toBeInstanceOf(mongoose.Connection)
                         
+                        // Create a model using the connection
                         type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
                         const Model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
 
@@ -262,12 +264,13 @@ describe('MongooseUtils', () => {
         })
 
         describe('[PUBLIC]', () => {
-            describe('getConnection', () => {
+            describe('getConnection()', () => {
                 let initStub: sinon.SinonStub
 
                 beforeEach(() => {
-                    initStub = sinon.stub(MongooseUtils.prototype, 'init' as keyof MongooseUtils)
-                        .resolves()
+                    initStub = sinon.stub(
+                        MongooseUtils.prototype, 'init' as keyof MongooseUtils
+                    ).resolves()
                 })
 
                 afterEach(() => {
@@ -294,7 +297,7 @@ describe('MongooseUtils', () => {
                 })
             })
 
-            describe('createModel', () => {
+            describe('createModel()', () => {
                 let createSchemaStub: sinon.SinonStub
                 let getConnectionStub: sinon.SinonStub
 
