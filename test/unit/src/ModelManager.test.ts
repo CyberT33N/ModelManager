@@ -17,14 +17,17 @@
 import sinon from 'sinon'
 import mongoose from 'mongoose'
 import {
-    describe, it, expect, beforeEach, afterEach, beforeAll
+    describe, it, expect,
+    beforeEach, afterEach, beforeAll
 } from 'vitest'
 
 // ==== INTERNAL ====
 import MongooseUtils from '@/src/MongooseUtils'
 
 // ==== CODE TO TEST ====
-import ModelManager, { type IModel, type IModelCore } from '@/src/ModelManager'
+import ModelManager, {
+    type IModel, type IModelCore
+} from '@/src/ModelManager'
 
 describe('[UNIT TEST] - src/ModelManager.ts',() => {
     let modelDetails: IModel<any>
@@ -51,7 +54,7 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
 
     beforeEach(async() => {
         // Reset instance before creating a new one
-        Reflect.set(ModelManager, 'instance', null)
+        ModelManager['instance'] = null
 
         initStub = sinon.stub(
             ModelManager.prototype, 'init' as keyof ModelManager
@@ -66,7 +69,7 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
     })
 
     describe('getInstance()', () => {
-        it('should create new instance', async() => {
+        it('should create new instance', () => {
             expect(initStub.calledOnce).toBe(true)
             expect(modelManager.models).toEqual([])
         })
@@ -90,7 +93,7 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
 
                     globModelsStub = sinon.stub(
                         ModelManager.prototype, 'globModels' as keyof ModelManager
-                    ).resolves()
+                    ).resolves([])
                 })
 
                 afterEach(() => {
@@ -98,25 +101,25 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
                 })
             
                 it('should initialize models if not already initialized', async() => {
-                    await Object.getPrototypeOf(modelManager).init()
+                    await modelManager['init']()
 
-                    expect(globModelsStub.calledOnce).toBe(true)
-                    expect(globModelsStub.calledWith(`${process.cwd()}/**/*.model.mjs`)).toBe(true)
                     expect(modelManager.models).toEqual([])
+                    expect(
+                        globModelsStub.calledOnceWithExactly(`${process.cwd()}/**/*.model.mjs`)
+                    ).toBe(true)
                 })
 
                 it('should not initialize models if already initialized', async() => {
                     modelManager.models = [modelDetails]
 
-                    const initMethod: Function = Reflect.get(modelManager, 'init')
-                    await initMethod.call(modelManager)
+                    await modelManager['init']()
                     
                     expect(globModelsStub.called).toBe(false)
                     expect(modelManager.models).toEqual([modelDetails])
                 })
             })
 
-            describe('globModels', () => {
+            describe('globModels()', () => {
                 let createModelStub: sinon.SinonStub
 
                 beforeEach(() => {
@@ -129,24 +132,18 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
                 })
             
                 it('should return an array of globbed models', async() => {
+                    const { modelName, dbName, schema, Model } = modelDetails
                     const expression = `${process.cwd()}/test/models/**/*.model.mjs`
 
-                    const globbedModels = await Object.getPrototypeOf(modelManager)
-                        .globModels(expression)
+                    const globbedModels = await modelManager['globModels'](expression)
 
-                    const globbedModel = globbedModels.at(0)
-                    const { modelName, dbName, schema, Model } = modelDetails
-                    
                     // ==== SPIES ====
                     expect(createModelStub.calledOnceWithExactly({
                         modelName, schema, dbName
                     })).toBe(true)
 
                     // ==== EXPECTS ====
-                    expect(globbedModel.modelName).toBe(modelName)
-                    expect(globbedModel.dbName).toBe(dbName)
-                    expect(globbedModel.schema).toEqual(schema)
-                    expect(globbedModel.Model).toEqual(Model)
+                    expect(globbedModels).toEqual([modelDetails])
                 })
     
                 it('should return an empty array because no model can be found', async() => {
@@ -201,15 +198,21 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
                     modelCreateIndexesStub.restore()
                 })
             
-                it('should create a new model and call createIndexes', async() => {
+                it('should create a new mongoose model and call createIndexes()', async() => {
                     const { modelName, schema, dbName, Model } = modelDetails
 
                     type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-                    const createdModel = await modelManager.createModel<TMongooseSchema>({ modelName, schema, dbName })
+                    const createdModel = await modelManager.createModel<TMongooseSchema>({
+                        modelName, schema, dbName
+                    })
             
                     // ==== SPIES ====
-                    expect(mongooseUtilsGetInstanceStub.calledOnceWithExactly(dbName)).toBe(true)
-                    expect(mongooseUtilsCreateModelStub.calledOnceWithExactly(schema, modelName)).toBe(true)
+                    expect(
+                        mongooseUtilsGetInstanceStub.calledOnceWithExactly(dbName)
+                    ).toBe(true)
+                    expect(
+                        mongooseUtilsCreateModelStub.calledOnceWithExactly(schema, modelName)
+                    ).toBe(true)
                     expect(modelCreateIndexesStub.calledOnce).toBe(true)
             
                     // ==== EXPECTS ====

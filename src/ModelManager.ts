@@ -17,7 +17,6 @@ import { glob } from 'glob'
 import mongoose from 'mongoose'
 
 import MongooseUtils from './MongooseUtils'
-import Modelutils from './ModelUtils'
 
 /**
  * Interface representing the details of a Mongoose model.
@@ -25,11 +24,11 @@ import Modelutils from './ModelUtils'
  */
 export interface IModelCore<TSchema> {
     /** The name of the model. */
-    modelName: string;
+    modelName: string
     /** The name of the database where the model is stored. */
-    dbName: string;
+    dbName: string
     /** The schema used for the model. */
-    schema: mongoose.SchemaDefinition<TSchema>;
+    schema: mongoose.SchemaDefinition<TSchema>
 }
 
 /**
@@ -38,16 +37,14 @@ export interface IModelCore<TSchema> {
  */
 export interface IModel<TSchema> extends IModelCore<TSchema> {
     /** The Mongoose Model instance. */
-    Model: mongoose.Model<any>;
+    Model: mongoose.Model<any>
 }
 
 /**
- * @extends Modelutils
  * A manager class for all Mongoose models in the application.
  * Manages the dynamic loading and initialization of Mongoose models.
  */
-export default class ModelManager extends Modelutils {
-    /** Singleton instance of the ModelMaSchemanager. */
+export default class ModelManager {
     // eslint-disable-next-line no-use-before-define
     private static instance: ModelManager | null = null
 
@@ -58,9 +55,7 @@ export default class ModelManager extends Modelutils {
      * Private constructor to prevent direct instantiation.
      * Access is provided via the `getInstance` method.
      */
-    private constructor() {
-        super()
-    }
+    private constructor() {}
 
     /**
      * Returns the singleton instance of the ModelManager.
@@ -92,19 +87,18 @@ export default class ModelManager extends Modelutils {
      * Globs through files to dynamically import Mongoose models and creates typed models.
      * @private
      * @param {string} expression - The glob pattern used to find model files.
-     * @returns {Promise< IModel<mongoose.SchemaDefinition<{}>>[] >} 
-     * - A promise that resolves to an array of typed Mongoose models.
+     * @returns {Promise< IModel<mongoose.SchemaDefinition<{}>>[] >} - A promise that resolves to an array of typed Mongoose models.
      */
     private async globModels(
         expression: string
     ): Promise< IModel<mongoose.SchemaDefinition<{}>>[] > {
         const modelPaths = await glob(expression)
-        const models: IModel<mongoose.SchemaDefinition<{}>>[] = []
+        const modelDetails: IModel<mongoose.SchemaDefinition<{}>>[] = []
 
         for (const path of modelPaths) {
             // Ignore Webpack bundling during dynamic import
-            const modelDetails = await import(/* webpackIgnore: true */ path)
-            const { modelName, dbName, schema } = modelDetails
+            const modelCoreDetail = await import(/* webpackIgnore: true */ path)
+            const { modelName, dbName, schema } = modelCoreDetail
 
             // Generate the Mongoose schema type
             type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
@@ -117,22 +111,22 @@ export default class ModelManager extends Modelutils {
             
             console.log('[ModelManager] - Globbing Model:', modelName)
 
-            const model: IModel<TMongooseSchema> = {
+            const modelDetail: IModel<TMongooseSchema> = {
                 modelName,
                 Model,
                 dbName,
                 schema
             }
 
-            models.push(model)
+            modelDetails.push(modelDetail)
         }
 
-        return models
+        return modelDetails
     }
 
     /**
      * Returns all loaded Mongoose models.
-     * @returns A list of all loaded Mongoose models.
+     * @returns {IModel<mongoose.SchemaDefinition<{}>>[]} - A list of all loaded Mongoose models.
      */
     public getModels(): IModel<mongoose.SchemaDefinition<{}>>[] {
         return this.models

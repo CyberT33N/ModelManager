@@ -219,7 +219,6 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
 
                         // ==== STUBS ====
                         expect(updateConnectionStringStub.calledOnce).toBeTruthy()
-                        
                         expect(createConnectionSpy.calledOnceWithExactly(mongoUri)).toBe(true)
 
                         // ==== CONNECTION ====
