@@ -14,20 +14,20 @@
 */
 
 // ==== DEPENDENCIES ====
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose from 'mongoose';
-import { ResourceNotFoundError } from 'error-manager-helper';
+import { MongoMemoryServer } from 'mongodb-memory-server'
+import mongoose from 'mongoose'
 
 // ==== INTERNAL ====
-import MongooseUtils from './MongooseUtils';
-import type { IModelCore } from './ModelManager';
+import MongooseUtils from './MongooseUtils'
+import type { IModelCore } from './ModelManager'
 
 /**
  * Interface representing a MongoDB memory model structure.
+ * @template TSchema - The type of the document.
  */
-interface MemoryModel {
+export interface IMemoryModel<TSchema> {
     /** Mongoose model instance */
-    Model: mongoose.Model<any>
+    Model: mongoose.Model<TSchema>
     /** MongoMemoryServer instance for managing in-memory database */
     mongoServer: MongoMemoryServer
     /** Mongoose connection instance */
@@ -36,22 +36,21 @@ interface MemoryModel {
 
 /**
  * Utility class for handling Mongoose model-related operations.
- * Primarily used for creating and managing in-memory models using MongoMemoryServer.
+ * At the moment primarily used for creating and managing in-memory models using MongoMemoryServer.
  */
 export default class ModelUtils {
     /**
      * Creates an in-memory Mongoose model using MongoMemoryServer.
      * This is useful for testing or scenarios where a transient, in-memory database is needed.
      *
-     * @param {IModel<any>} modelDetail - The model object containing the schema and other details.
-     * @returns {Promise<MemoryModel>} - An object containing the in-memory model, MongoMemoryServer instance, and connection.
-     * @throws {ResourceNotFoundError} - Throws if the model is not found in ModelManager.
+     * @param {IModelCore<any>} modelCoreDetail - The model object containing the schema and other details.
+     * @returns {Promise<IMemoryModel>} - An object containing the in-memory model, MongoMemoryServer instance, and connection.
      */
     public static async createMemoryModel(
-        modelDetail: IModelCore<any>
-    ): Promise< MemoryModel > {
+        modelCoreDetail: IModelCore<any>
+    ): Promise<IMemoryModel<any>> {
         // Destructure necessary properties from the model object
-        const { dbName, schema, modelName } = modelDetail
+        const { dbName, schema, modelName } = modelCoreDetail
 
         // Generate a TypeScript type for the Mongoose schema's document structure
         type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
@@ -71,7 +70,8 @@ export default class ModelUtils {
         const Model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
 
         // Return the created memory model, server, and connection
-        return { Model, mongoServer, conn }
+        const memoryModel: IMemoryModel<TMongooseSchema> = { Model, mongoServer, conn }
+        return memoryModel
     }
 }
 

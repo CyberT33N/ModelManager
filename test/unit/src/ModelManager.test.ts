@@ -17,7 +17,7 @@
 import sinon from 'sinon'
 import mongoose from 'mongoose'
 import {
-    describe, it, expect,
+    describe, it, expect, expectTypeOf,
     beforeEach, afterEach, beforeAll
 } from 'vitest'
 

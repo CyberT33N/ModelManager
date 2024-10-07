@@ -27,7 +27,7 @@ import ModelManager, {
     type IModel, type IModelCore
 } from '@/src/ModelManager'
 
-describe('[TYPE TEST] - src/ModelManager.ts',() => {
+describe('[TYPE TEST] - src/ModelManager.ts', () => {
     let modelDetails: IModel<any>
     let schema: mongoose.SchemaDefinition<any>
 
@@ -40,10 +40,10 @@ describe('[TYPE TEST] - src/ModelManager.ts',() => {
 
         // Generate the Mongoose schema type
         type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-        ;schema = modelCoreDetails.schema as mongoose.SchemaDefinition<TMongooseSchema>
+            ; schema = modelCoreDetails.schema as mongoose.SchemaDefinition<TMongooseSchema>
     })
 
-    beforeEach(async() => {
+    beforeEach(async () => {
         // Reset instance before creating a new one
         ModelManager['instance'] = null
 
@@ -58,6 +58,40 @@ describe('[TYPE TEST] - src/ModelManager.ts',() => {
         initStub.restore()
     })
 
+    describe('[INTERFACES]', () => {
+        interface IModelCore_Test<TSchema> {
+            /** The name of the model. */
+            modelName: string
+            /** The name of the database where the model is stored. */
+            dbName: string
+            /** The schema used for the model. */
+            schema: mongoose.SchemaDefinition<TSchema>
+        }
+
+        interface IModel_Test<TSchema> extends IModelCore_Test<TSchema> {
+            /** The Mongoose Model instance. */
+            Model: mongoose.Model<TSchema>
+        }
+
+        describe('IModelCore', () => {
+            it('should verify interface type', () => {
+                const { schema } = modelDetails
+                type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+                    ; expectTypeOf<IModelCore<TMongooseSchema>>()
+                        .toEqualTypeOf<IModelCore_Test<TMongooseSchema>>()
+            })
+        })
+
+        describe('IModel', () => {
+            it('should verify interface type', () => {
+                const { schema } = modelDetails
+                type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+                    ; expectTypeOf<IModel<TMongooseSchema>>()
+                        .toEqualTypeOf<IModel_Test<TMongooseSchema>>()
+            })
+        })
+    })
+
     describe('getInstance()', () => {
         it('should verify instance and return type', () => {
             expectTypeOf(modelManager).toEqualTypeOf<ModelManager>()
@@ -68,13 +102,13 @@ describe('[TYPE TEST] - src/ModelManager.ts',() => {
     describe('[METHODS]', () => {
         describe('[PRIVATE]', () => {
             describe('init()', () => {
-                it('should verify return type', async() => {
+                it('should verify return type', async () => {
                     expectTypeOf(modelManager['init']).returns.resolves.toBeVoid()
                 })
             })
 
             describe('globModels()', () => {
-                it('should verify parameter and return type', async() => {
+                it('should verify parameter and return type', async () => {
                     expectTypeOf(modelManager['globModels']).parameter(0).toBeString()
                     expectTypeOf(modelManager['globModels']).returns.resolves
                         .toEqualTypeOf<IModel<mongoose.SchemaDefinition<{}>>[]>()
@@ -84,14 +118,14 @@ describe('[TYPE TEST] - src/ModelManager.ts',() => {
 
         describe('[PUBLIC]', () => {
             describe('getModels()', () => {
-                it('should verify return type', async() => {
+                it('should verify return type', async () => {
                     expectTypeOf(modelManager['getModels']).returns
                         .toEqualTypeOf<IModel<mongoose.SchemaDefinition<{}>>[]>()
                 })
             })
 
             describe('getModel()', () => {
-                it('should verify parameter and return type', async() => {
+                it('should verify parameter and return type', async () => {
                     expectTypeOf(modelManager['globModels']).parameter(0).toBeString()
                     expectTypeOf(modelManager['getModel']).returns
                         .toEqualTypeOf<IModel<mongoose.SchemaDefinition<{}>> | undefined>()
@@ -99,9 +133,8 @@ describe('[TYPE TEST] - src/ModelManager.ts',() => {
             })
 
             describe('createModel()', () => {
-                it('should verify parameter and return type', async() => {
-                    const { schema  } = modelDetails
-
+                it('should verify parameter and return type', async () => {
+                    const { schema } = modelDetails
                     type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
 
                     expectTypeOf(

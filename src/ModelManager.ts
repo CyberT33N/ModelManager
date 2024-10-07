@@ -37,7 +37,7 @@ export interface IModelCore<TSchema> {
  */
 export interface IModel<TSchema> extends IModelCore<TSchema> {
     /** The Mongoose Model instance. */
-    Model: mongoose.Model<any>
+    Model: mongoose.Model<TSchema>
 }
 
 /**
