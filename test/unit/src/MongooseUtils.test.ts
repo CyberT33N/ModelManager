@@ -37,33 +37,33 @@ import ModelUtils from '@/src/ModelUtils'
 import MongooseUtils from '@/src/MongooseUtils'
 
 describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
-    let mongoServer: MongoMemoryServer
-    let modelDetails: IModel<any> 
     let mongooseUtils: MongooseUtils
-    let dbName: string
-    let modelName: string
-    let schema: mongoose.SchemaDefinition<any>
+
+    let modelDetails: IModel<any>
     let mongooseSchema: mongoose.Schema<any>
+
     let conn: mongoose.Connection
-    let Model: mongoose.Model<any>
+    let mongoServer: MongoMemoryServer
+    let mongoUri: string
 
     const docData = { name: 'test', decimals: 69n }
 
     beforeAll(async () => {
-        const modelDetail: IModelCore<any> = await import('@/test/models/Test.model.mjs')
-        ;({ dbName, modelName, schema } = modelDetail)
-
+        const modelCoreDetails: IModelCore<any> = await import('@/test/models/Test.model.mjs')
+        const { modelName, dbName, schema } = modelCoreDetails
+        
         // Generate the Mongoose schema type
         type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
         ;mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema)
        
-        ;({ Model, mongoServer, conn } = await ModelUtils.createMemoryModel(modelDetail))
-        const connUri = mongoServer.getUri()
-        console.log(`[MongoDB] - Connection URI: ${connUri}`)
+        const memoryServerData = await ModelUtils.createMemoryModel(modelCoreDetails)
+        mongoServer = memoryServerData.mongoServer
+        conn = memoryServerData.conn
+        mongoUri = mongoServer.getUri()
 
         modelDetails = {
             modelName,
-            Model,
+            Model: memoryServerData.Model,
             dbName,
             schema
         } as IModel<TMongooseSchema>
@@ -77,7 +77,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
     beforeEach(() => {
         Reflect.set(MongooseUtils, 'instances', new Map())
   
-        mongooseUtils = MongooseUtils.getInstance(dbName)
+        mongooseUtils = MongooseUtils.getInstance(modelDetails.dbName)
         expect(mongooseUtils).toBeInstanceOf(MongooseUtils)
     })
 
@@ -88,13 +88,13 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
             })
              
             it('should get existing instance for db', async() => {
-                const mongooseUtils2 = MongooseUtils.getInstance(dbName)
+                const mongooseUtils2 = MongooseUtils.getInstance(modelDetails.dbName)
                 expect(mongooseUtils2).toEqual(mongooseUtils)
 
                 expect(Reflect.get(MongooseUtils, 'instances').size).toBe(1)
                 
                 expect(Reflect.get(mongooseUtils2, 'changed')).toBe(true)
-                expect(Reflect.get(mongooseUtils2, 'dbName')).toBe(dbName)
+                expect(Reflect.get(mongooseUtils2, 'dbName')).toBe(modelDetails.dbName)
             })
         })
 
@@ -102,7 +102,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
             const dbName2 = 'test2'
 
             it('should create new instance and set default properties', async() => {
-                expect(Reflect.get(mongooseUtils, 'dbName')).toBe(dbName)
+                expect(Reflect.get(mongooseUtils, 'dbName')).toBe(modelDetails.dbName)
                 expect(Reflect.get(mongooseUtils, 'conn')).toBe(null)
                 expect(Reflect.get(mongooseUtils, 'connectionString'))
                 .toBe(process.env.MONGODB_CONNECTION_STRING)
@@ -136,6 +136,8 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                 })
 
                 it('should create a mongoose schema', () => {
+                    const { modelName, schema } = modelDetails
+
                     // Generate the Mongoose schema type
                     type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
                 
@@ -201,12 +203,9 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
 
                 describe('[SUCCESS]', () => {
                     let createConnectionSpy: sinon.SinonSpy
-                    let mongoUri: string
 
                     beforeEach(() => {
                         createConnectionSpy = sinon.spy(mongoose, 'createConnection')
-
-                        mongoUri = mongoServer.getUri()
                         Reflect.set(mongooseUtils, 'connectionString', mongoUri)
                     })
 
@@ -227,6 +226,8 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                         const conn: mongoose.Connection = Reflect.get(mongooseUtils, 'conn')
                         expect(conn.readyState).toBe(1)
                         expect(conn).toBeInstanceOf(mongoose.Connection)
+
+                        const { modelName, schema } = modelDetails
                         
                         // Create a model using the connection
                         type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
@@ -317,6 +318,8 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                 })
                
                 it('should create a mongoose model', async() => {
+                    const { modelName, schema } = modelDetails
+                    
                     type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
                     const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
 

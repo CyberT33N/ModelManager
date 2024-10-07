@@ -49,7 +49,7 @@ export default class ModelUtils {
      */
     public static async createMemoryModel(
         modelDetail: IModelCore<any>
-    ): Promise<MemoryModel> {
+    ): Promise< MemoryModel > {
         // Destructure necessary properties from the model object
         const { dbName, schema, modelName } = modelDetail
 

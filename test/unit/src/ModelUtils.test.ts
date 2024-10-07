@@ -13,115 +13,95 @@
 ███████████████████████████████████████████████████████████████████████████████
 */
 
-// ==== VITEST ====
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-
 // ==== DEPENDENCIES ====
 import sinon from 'sinon'
 import mongoose from 'mongoose'
 import { MongoMemoryServer } from 'mongodb-memory-server'
+import {
+     describe, it, expect, beforeEach, afterEach, beforeAll
+} from 'vitest'
+
+// ==== INTERNAL ====
+import MongooseUtils from '@/src/MongooseUtils'
+import type { IModelCore } from '@/src/ModelManager'
 
 // ==== CODE ====
 import ModelUtils from '@/src/ModelUtils'
 
-// ==== CLASSES ====
-import MongooseUtils from '@/src/MongooseUtils'
-import ModelManager from '@/src/ModelManager'
+describe('[UNIT TEST] - src/ModelUtils.ts', () => {
+     let mongooseSchema: mongoose.Schema<any>
+     let modelCoreDetails: IModelCore<any>
 
-// describe('[TEST] - ModelUtils', () => {
-//      interface IUser {
-//           name: string;
-//           email: string;
-//           avatar?: string;
-//         }
-        
-//      const userSchema = new mongoose.Schema<IUser>({
-//          name: { type: String, required: true },
-//          email: { type: String, required: true },
-//          avatar: String
-//      })
-    
-//      const UserModel = mongoose.model<IUser>('User', userSchema)
+     const docData = { name: 'test', decimals: 69n }
 
-        
-//      describe('[METHODS]', () => {
-//          describe('[STATIC]', () => {
-//              describe('createMemoryModel()', () => {
-//                  let modelManager: ModelManager
+     beforeAll(async () => {
+          const { modelName, dbName, schema }: IModelCore<any> = await import('@/test/models/Test.model.mjs')
 
-//                  beforeEach(async() => {
-//                      modelManager = await ModelManager.getInstance()
-//                  })
-       
-//                  describe('[ERROR]', () => {
-//                      let getModelStub: sinon.SinonStub
+          // Generate a TypeScript type for the Mongoose schema's document structure
+          type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
 
-//                      beforeEach(() => {
-//                          getModelStub = sinon.stub(modelManager, 'getModel').returns(undefined as any)
-//                      })
+          // Create the Mongoose schema using a utility function
+          mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, modelName)
 
-//                      afterEach(() => {
-//                          getModelStub.restore()
-//                      })
+          modelCoreDetails = {
+               modelName,
+               dbName,
+               schema
+          } as IModelCore<TMongooseSchema>
+     })
 
-//                      it('should throw an error if the model with the specified name does not exist', async() => {
-//                          const modelName = 'ModelNotFound'
+     describe('[METHODS]', () => {
+          describe('[STATIC]', () => {
+               describe('createMemoryModel()', () => {
+                    let mongooseUtilsCreateSchemaStub: sinon.SinonStub
+                    let mongoMemoryServerSpy: sinon.SinonSpy
+                    let mongooseConnectSpy: sinon.SinonSpy
 
-//                          await expect(
-//                              () => ModelUtils.createMemoryModel(modelName)
-//                          ).rejects.toThrowError(`createMemoryModel() - Model '${modelName}' not found.`)
+                    beforeEach(() => {
+                         mongoMemoryServerSpy = sinon.spy(MongoMemoryServer, 'create')
+                         mongooseConnectSpy = sinon.spy(mongoose, 'createConnection')
+                         mongooseUtilsCreateSchemaStub = sinon.stub(MongooseUtils, 'createSchema')
+                              .returns(mongooseSchema)
+                    })
 
-//                          expect(getModelStub.calledOnce).toBe(true)
-//                          expect(getModelStub.calledWith(modelName)).toBe(true)
-//                      })
-//                  })
+                    afterEach(() => {
+                         mongooseUtilsCreateSchemaStub.restore()
+                         mongoMemoryServerSpy.restore()
+                         mongooseConnectSpy.restore()
+                    })
 
-//                  describe('[SUCCESS]', () => {
-//                      let getModelStub: sinon.SinonStub
-//                      let mongooseUtilsCreateSchemaStub: sinon.SinonStub
-//                      let mongoMemoryServerSpy: sinon.SinonSpy
-//                      let mongooseConnectSpy: sinon.SinonSpy
+                    it('should return the model with the specified name', async () => {
+                         const { schema, modelName, dbName } = modelCoreDetails
+                         
+                         const {
+                              Model, mongoServer, conn
+                         } = await ModelUtils.createMemoryModel(modelCoreDetails)
 
-//                      const modelName = 'Model1'
+                         // ==== SPIES/STUBS ====
+                         expect(mongooseUtilsCreateSchemaStub.calledOnceWithExactly(
+                              schema, modelName)
+                         ).toBe(true)
 
-//                      beforeEach(() => {
-//                          getModelStub = sinon.stub(modelManager, 'getModel').returns({
-//                              modelName,
-//                              Model: UserModel,
-//                              dbName: 'test',
-//                              schema: userSchema
-//                          })
+                         expect(mongoMemoryServerSpy.calledOnceWithExactly({
+                              instance: { dbName }
+                         })).toBe(true)
 
-//                          mongooseUtilsCreateSchemaStub = sinon.stub(MongooseUtils, 'createSchema')
-//                              .returns(userSchema)
+                         expect(mongooseConnectSpy.calledOnce).toBe(true)
 
-//                          mongoMemoryServerSpy = sinon.spy(MongoMemoryServer, 'create')
-//                          mongooseConnectSpy = sinon.spy(mongoose, 'createConnection')
-//                      })
+                         // ==== EXPECTATIONS ====
+                         expect(Model.modelName).toEqual(modelName)
+                         expect(mongoServer).toBeInstanceOf(MongoMemoryServer)
+                         expect(conn).toBeInstanceOf(mongoose.Connection)
 
-//                      afterEach(() => {
-//                          getModelStub.restore()
-//                      })
+                         // Test if the created connection model is working
+                         const doc = new Model(docData)
+                         expect(doc).toBeInstanceOf(mongoose.Model)
+                         await doc.save()
 
-//                      it('should return the model with the specified name', async() => {
-//                          const result = await ModelUtils.createMemoryModel(modelName)
-//                          expect(result.Model.modelName).toEqual(modelName)
-//                          expect(result.mongoServer).toBeTruthy()
-//                          expect(result.conn).toBeTruthy()
-                   
-//                          expect(getModelStub.calledOnce).toBe(true)
-//                          expect(getModelStub.calledWith(modelName)).toBe(true)
-
-//                          expect(mongooseUtilsCreateSchemaStub.calledOnce).toBe(true)
-//                          expect(mongooseUtilsCreateSchemaStub.calledWith(userSchema, modelName)).toBe(true)
-
-//                          expect(mongoMemoryServerSpy.calledOnce).toBe(true)
-//                          expect(mongoMemoryServerSpy.calledWith({ instance: { dbName: 'test' } })).toBe(true)
-
-//                          expect(mongooseConnectSpy.calledOnce).toBe(true)                 
-//                      })
-//                  })
-//              })
-//          })
-//      })
-// })
+                         const foundDoc = await Model.findOne(docData)
+                         expect(foundDoc).toEqual(expect.objectContaining(docData))
+                    })
+               })
+          })
+     })
+})

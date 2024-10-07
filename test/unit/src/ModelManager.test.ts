@@ -24,18 +24,15 @@ import {
 import MongooseUtils from '@/src/MongooseUtils'
 
 // ==== CODE TO TEST ====
-import ModelManager, {
-    type IModel, type IModelCore
-} from '@/src/ModelManager'
+import ModelManager, { type IModel, type IModelCore } from '@/src/ModelManager'
 
 describe('[UNIT TEST] - src/ModelManager.ts',() => {
-    let modelDetails: IModel<any> 
+    let modelDetails: IModel<any>
     let modelManager: ModelManager
     let initStub: sinon.SinonStub
 
     beforeAll(async () => {
-        const modelDetail: IModelCore<any> = await import('@/test/models/Test.model.mjs')
-        const { modelName, dbName, schema } = modelDetail
+        const { modelName, dbName, schema }: IModelCore<any> = await import('@/test/models/Test.model.mjs')
     
         // Generate the Mongoose schema type
         type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
