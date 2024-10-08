@@ -28,9 +28,19 @@ import type { IModelCore } from '@/src/ModelManager'
 // ==== CODE TO TEST ====
 import ModelUtils, { type IMemoryModel } from '@/src/ModelUtils'
 
+
 describe('[TYPE TEST] - src/ModelUtils.ts', () => {
      let mongooseSchema: mongoose.Schema<any>
      let modelCoreDetails: IModelCore<any>
+
+     interface IMemoryModel_Test<TSchema> {
+          /** Mongoose model instance */
+          Model: mongoose.Model<TSchema>
+          /** MongoMemoryServer instance for managing in-memory database */
+          mongoServer: MongoMemoryServer
+          /** Mongoose connection instance */
+          conn: mongoose.Connection
+     }
 
      beforeAll(async () => {
           const { modelName, dbName, schema }: IModelCore<any> = await import('@/test/models/Test.model.mjs')
@@ -50,15 +60,6 @@ describe('[TYPE TEST] - src/ModelUtils.ts', () => {
 
      describe('[INTERFACES]', () => {
           describe('[IMemoryModel]', () => {
-               interface IMemoryModel_Test<TSchema> {
-                    /** Mongoose model instance */
-                    Model: mongoose.Model<TSchema>
-                    /** MongoMemoryServer instance for managing in-memory database */
-                    mongoServer: MongoMemoryServer
-                    /** Mongoose connection instance */
-                    conn: mongoose.Connection
-               }
-
                it('should verify interface type', () => {
                     const { schema } = modelCoreDetails
 

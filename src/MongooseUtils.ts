@@ -13,8 +13,8 @@
 ███████████████████████████████████████████████████████████████████████████████
 */
 
+// ==== DEPENDENCIES ====
 import mongoose from 'mongoose'
-
 import { BaseError } from 'error-manager-helper'
 
 /**
@@ -58,20 +58,21 @@ class MongooseUtils {
      * https://mongoosejs.com/docs/guide.html#options
      * @template TMongooseSchema - The type of the Mongoose schema.
      * @param {mongoose.SchemaDefinition<TMongooseSchema>} schema - The schema definition for the model.
-     * @param {string} name - The name of the collection in MongoDB.
-     * @returns A Mongoose Schema object.
+     * @param {string} collectionName - The name of the collection in MongoDB.
+     * @returns {mongoose.Schema<TMongooseSchema>} A Mongoose Schema object.
      */
     public static createSchema<TMongooseSchema>(
         schema: mongoose.SchemaDefinition<TMongooseSchema>,
-        name: string
+        collectionName: string
     ): mongoose.Schema<TMongooseSchema> {
-        const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema, { collection: name })
+        const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema, { collection: collectionName })
         return mongooseSchema
     }
 
     /**
      * Initializes the MongoDB connection.
      * @throws BaseError if the connection fails.
+     * @returns {void} A Promise that resolves when the connection is established.
      */
     private async init(): Promise<void> {
         console.log('[ModelManager] - Attempting to connect to MongoDB...')
@@ -90,6 +91,7 @@ class MongooseUtils {
 
     /**
      * Updates the connection string to include the database name.
+     * @returns {void} A void that esolves when the connection string is updated.
      */
     private updateConnectionString(): void {
         const urlObj = new URL(this.connectionString)
@@ -100,9 +102,9 @@ class MongooseUtils {
     /**
      * Retrieves the current MongoDB connection.
      * If the connection is not established, it will initialize it first.
-     * @returns A Promise that resolves to the MongoDB connection.
+     * @returns {Promise<mongoose.Connection>} A Promise that resolves to the MongoDB connection.
      */
-    public async getConnection(): Promise< mongoose.Connection > {
+    public async getConnection(): Promise<mongoose.Connection> {
         if (!this.conn) {
             await this.init()
         }
@@ -115,12 +117,12 @@ class MongooseUtils {
      * @template TMongooseSchema - The type of the Mongoose schema.
      * @param {mongoose.SchemaDefinition<TMongooseSchema>} schema - The schema definition for the model.
      * @param {string} name - The name of the model and collection.
-     * @returns A Promise that resolves to the Mongoose Model.
+     * @returns {Promise<mongoose.Model<TMongooseSchema>>} A Promise that resolves to the Mongoose Model.
      */
     public async createModel<TMongooseSchema>(
         schema: mongoose.SchemaDefinition<TMongooseSchema>,
         name: string
-    ): Promise< mongoose.Model<TMongooseSchema> > {
+    ): Promise<mongoose.Model<TMongooseSchema>> {
         const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, name)
         const conn = await this.getConnection()
 

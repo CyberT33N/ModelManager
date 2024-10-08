@@ -69,14 +69,15 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
         } as IModel<TMongooseSchema>
     })
 
-    afterAll(async () => {
+    afterAll(async() => {
         // Calling stop() will close all connections from each created instance
         await mongoServer.stop()
     })
 
     beforeEach(() => {
-        Reflect.set(MongooseUtils, 'instances', new Map())
-  
+        // Reset the instances map
+        MongooseUtils['instances'] = new Map()
+
         mongooseUtils = MongooseUtils.getInstance(modelDetails.dbName)
         expect(mongooseUtils).toBeInstanceOf(MongooseUtils)
     })
@@ -87,7 +88,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                 Reflect.set(mongooseUtils, 'changed', true)
             })
              
-            it('should get existing instance for db', async() => {
+            it('should get existing instance for db', () => {
                 const mongooseUtils2 = MongooseUtils.getInstance(modelDetails.dbName)
                 expect(mongooseUtils2).toEqual(mongooseUtils)
 
@@ -102,6 +103,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
             const dbName2 = 'test2'
 
             it('should create new instance and set default properties', async() => {
+                // Instance will be created in beforeEach
                 expect(Reflect.get(mongooseUtils, 'dbName')).toBe(modelDetails.dbName)
                 expect(Reflect.get(mongooseUtils, 'conn')).toBe(null)
                 expect(Reflect.get(mongooseUtils, 'connectionString'))
@@ -109,6 +111,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
             })
 
             it('should create new instance if instance for db not exists', async() => {
+                // Instance will be created in beforeEach
                 // ==== INSTANCE #1 ====
                 expect(Reflect.get(MongooseUtils, 'instances').size).toBe(1)
 
@@ -124,10 +127,10 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
 
     describe('[METHODS]', () => {
         describe('[STATIC]', () => {
-            describe('createSchema', () => {
+            describe('createSchema()', () => {
                 let schemaSpy: sinon.SinonSpy
 
-                beforeEach(async() => {
+                beforeEach(() => {
                     schemaSpy = sinon.spy(mongoose, 'Schema')
                 })
        
@@ -181,7 +184,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
 
                     it('should throw an error when initializing connection with mongoose fails', async () => {
                         try {
-                            await Object.getPrototypeOf(mongooseUtils).init()
+                            await mongooseUtils['init']()
                             assert.fail('This line should not be reached')
                         } catch (err) {
                             if (err instanceof BaseError) {
@@ -206,23 +209,22 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
 
                     beforeEach(() => {
                         createConnectionSpy = sinon.spy(mongoose, 'createConnection')
-                        Reflect.set(mongooseUtils, 'connectionString', mongoUri)
+                        mongooseUtils['connectionString'] = mongoUri
                     })
 
-                    afterEach(async () => {
+                    afterEach(() => {
                         createConnectionSpy.restore()
                     })
 
                     it('should initialize connection with mongoose', async () => {
-                        const initMethod: Function = Reflect.get(mongooseUtils, 'init')
-                        await initMethod.call(mongooseUtils)
+                        await mongooseUtils['init']()
 
                         // ==== STUBS ====
                         expect(updateConnectionStringStub.calledOnce).toBeTruthy()
                         expect(createConnectionSpy.calledOnceWithExactly(mongoUri)).toBe(true)
 
                         // ==== CONNECTION ====
-                        const conn: mongoose.Connection = Reflect.get(mongooseUtils, 'conn')
+                        const conn = mongooseUtils['conn']!
                         expect(conn.readyState).toBe(1)
                         expect(conn).toBeInstanceOf(mongoose.Connection)
 
@@ -246,17 +248,16 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                 const dbName = 'newDbName'
 
                 beforeEach(() => {
+                    // Must sue reflect here because of read-only property
                     Reflect.set(mongooseUtils, 'dbName', dbName)
                 })
 
                 it('should update the connection string with the correct database name', () => {
-                    const method: Function = Reflect.get(mongooseUtils, 'updateConnectionString')
-                    method.call(mongooseUtils)
+                    mongooseUtils['updateConnectionString']()
 
-                    const newConnectionString = Reflect.get(mongooseUtils, 'connectionString')
-
+                    const newConnectionString = mongooseUtils['connectionString']
+                    
                     const urlObj = new URL(newConnectionString)
-
                     expect(urlObj.pathname).toBe(`/${dbName}`)
                     expect(urlObj.toString()).toBe(newConnectionString)
                 })
@@ -288,7 +289,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                 describe('[EXISTING CONNECTION]', () => {
                     it('should not call init method because conn not null', async() => {
                         const expectedConn = {} as mongoose.Connection
-                        Reflect.set(mongooseUtils, 'conn', expectedConn)
+                        mongooseUtils['conn'] = expectedConn
 
                         const conn = await mongooseUtils.getConnection()
                         expect(initStub.called).toBe(false)
@@ -308,7 +309,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                         
                     getConnectionStub = sinon.stub(
                         MongooseUtils.prototype, 'getConnection' as keyof MongooseUtils
-                    ).resolves(Promise.resolve(conn))
+                    ).resolves(conn)
                 })
       
                 afterEach(() => {
