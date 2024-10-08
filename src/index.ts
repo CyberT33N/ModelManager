@@ -13,3 +13,16 @@
 ███████████████████████████████████████████████████████████████████████████████
 */
 
+export {
+     default as ModelManager,
+     type IModelCore, type IModel
+} from './ModelManager'
+
+export {
+     default as MongooseUtils
+} from './MongooseUtils'
+
+export {
+     default as ModelUtils,
+     type IMemoryModel
+} from './ModelUtils'

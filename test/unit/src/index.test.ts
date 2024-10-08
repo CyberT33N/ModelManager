@@ -13,20 +13,26 @@
 ███████████████████████████████████████████████████████████████████████████████
 */
 
-// This file must be .mjs format because of the next.js instrumentationn and dynamic import
+import { describe, it, expect } from 'vitest'
 
-// ==== CONSTS ====
-const modelName = 'testModelName'
-const dbName = 'testDbName'
+import {
+    ModelManager,
+    MongooseUtils,
+    ModelUtils
+} from '@/src/index'
 
-const schema = {
-    name: { 
-        type: String,
-        required: true,
-        unique: true,
-        index: true
-    },
-    decimals: { type: BigInt, required: true }
-}
+describe('[UNIT TEST] - src/index.ts', () => {
+    describe('[CODE]', () => {
+        it('should have ModelManager class', () => {
+            expect(ModelManager).toBeDefined()
+        })
 
-export { dbName, modelName, schema }
+        it('should have MongooseUtils class', () => {
+            expect(MongooseUtils).toBeDefined()
+        })
+
+        it('should have ModelUtils class', () => {
+            expect(ModelUtils).toBeDefined()
+        })
+    })
+})

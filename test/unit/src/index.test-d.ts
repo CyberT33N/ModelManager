@@ -13,20 +13,29 @@
 ███████████████████████████████████████████████████████████████████████████████
 */
 
-// This file must be .mjs format because of the next.js instrumentationn and dynamic import
+import { describe, it, expectTypeOf } from 'vitest'
 
-// ==== CONSTS ====
-const modelName = 'testModelName'
-const dbName = 'testDbName'
+import type { 
+    IModelCore, IModel,
+    IMemoryModel
+} from '@/src/index'
 
-const schema = {
-    name: { 
-        type: String,
-        required: true,
-        unique: true,
-        index: true
-    },
-    decimals: { type: BigInt, required: true }
-}
+describe('[TYPE TEST] - src/index.ts', () => {
+    describe('[INTERFACES]', () => {
+        describe('[ModelManager]', () => {
+            it('should have the interface IModelCore', () => {
+                expectTypeOf<IModelCore<any>>().not.toBeUndefined()
+            })
 
-export { dbName, modelName, schema }
+            it('should have the interface IModel', () => {
+                expectTypeOf<IModel<any>>().not.toBeUndefined()
+            })
+        })
+
+        describe('[ModelUtils]', () => {
+            it('should have the interface IMemoryModel', () => {
+                expectTypeOf<IMemoryModel<any>>().not.toBeUndefined()
+            })
+        })
+    })
+})
