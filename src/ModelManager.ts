@@ -91,14 +91,14 @@ export default class ModelManager {
      */
     private async globModels(
         expression: string
-    ): Promise< IModel<mongoose.SchemaDefinition<{}>>[] > {
+    ): Promise< IModel<mongoose.SchemaDefinition<{}> >[] > {
         const modelPaths = await glob(expression)
         const modelDetails: IModel<mongoose.SchemaDefinition<{}>>[] = []
 
         for (const path of modelPaths) {
             // Ignore Webpack bundling during dynamic import
             const modelCoreDetail = await import(/* webpackIgnore: true */ path)
-            const { modelName, dbName, schema } = modelCoreDetail
+            const { modelName, dbName, schema }: IModelCore<any> = modelCoreDetail
 
             // Generate the Mongoose schema type
             type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>

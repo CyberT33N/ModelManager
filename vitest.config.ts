@@ -32,11 +32,11 @@ export default defineConfig({
     plugins: [tsconfigPaths()],
     test: {
         watch: false,
-        setupFiles: 'test/unit/pretestEach.ts',
+        // setupFiles: 'test/unit/pretestEach.ts',
         // globalSetup: 'test/integration/pretestAll.ts',
         environment: 'node',
         typecheck: {
-            include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)'] // Hier den typecheck.include Wert einfügen
+            include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)']
         },
         coverage: {
             /**

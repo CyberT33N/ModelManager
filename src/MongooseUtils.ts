@@ -116,17 +116,17 @@ class MongooseUtils {
      * Creates a model for a specified schema and collection name.
      * @template TMongooseSchema - The type of the Mongoose schema.
      * @param {mongoose.SchemaDefinition<TMongooseSchema>} schema - The schema definition for the model.
-     * @param {string} name - The name of the model and collection.
+     * @param {string} modelName - The name of the model and collection.
      * @returns {Promise<mongoose.Model<TMongooseSchema>>} A Promise that resolves to the Mongoose Model.
      */
     public async createModel<TMongooseSchema>(
         schema: mongoose.SchemaDefinition<TMongooseSchema>,
-        name: string
+        modelName: string
     ): Promise<mongoose.Model<TMongooseSchema>> {
-        const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, name)
+        const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, modelName)
         const conn = await this.getConnection()
 
-        const model = conn.model<TMongooseSchema>(name, mongooseSchema, name)
+        const model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
         return model
     }
 }
