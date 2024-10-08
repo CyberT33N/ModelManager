@@ -14,7 +14,6 @@
     "test-only": "bash test-only.sh",
     "test": "vitest --typecheck --coverage --disable-console-intercept --watch=false",
     "test:watch": "vitest --typecheck --watch",
-    "test:integration": "vitest run --typecheck --testTimeout=300000 --coverage --disable-console-intercept --watch=false --config vitest.integration.config.ts",
     "test:unit": "vitest run --typecheck --testTimeout=300000 --coverage --disable-console-intercept --watch=false --config vitest.unit.config.ts"
   },
   "repository": {
