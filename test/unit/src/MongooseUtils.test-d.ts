@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -15,19 +16,13 @@
 
 // ==== DEPENDENCIES ====
 import mongoose from 'mongoose'
-import sinon from 'sinon'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 
 import {
-    describe, it, assert,
+    describe, it,
     expect, expectTypeOf,
-    beforeEach, afterEach, beforeAll, afterAll
+    beforeEach, beforeAll, afterAll
 } from 'vitest'
-
-import {
-    BaseError,
-    type IBaseError
-} from 'error-manager-helper'
 
 // ==== INTERNAL ====
 import type { IModel, IModelCore } from '@/src/ModelManager'
@@ -38,35 +33,22 @@ import MongooseUtils from '@/src/MongooseUtils'
 
 describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
     let mongooseUtils: MongooseUtils
-
     let modelDetails: IModel<any>
-    let mongooseSchema: mongoose.Schema<any>
-
-    let conn: mongoose.Connection
     let mongoServer: MongoMemoryServer
-    let mongoUri: string
 
-    const docData = { name: 'test', decimals: 69n }
-
-    beforeAll(async () => {
-        const modelCoreDetails: IModelCore<any> = await import('@/test/models/Test.model.mjs')
+    beforeAll(async() => {
+        const modelCoreDetails: IModelCore = await import('@/test/models/Test.model.mjs')
         const { modelName, dbName, schema } = modelCoreDetails
         
-        // Generate the Mongoose schema type
-        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-        ;mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema)
-       
         const memoryServerData = await ModelUtils.createMemoryModel(modelCoreDetails)
         mongoServer = memoryServerData.mongoServer
-        conn = memoryServerData.conn
-        mongoUri = mongoServer.getUri()
 
         modelDetails = {
             modelName,
             Model: memoryServerData.Model,
             dbName,
             schema
-        } as IModel<TMongooseSchema>
+        }
     })
 
     afterAll(async() => {
@@ -86,7 +68,7 @@ describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
         it('should verify param and return type', () => {
             expectTypeOf(MongooseUtils.getInstance).toBeCallableWith(modelDetails.dbName)
             expectTypeOf(MongooseUtils.getInstance).returns
-                 .toEqualTypeOf<MongooseUtils>()
+                .toEqualTypeOf<MongooseUtils>()
         })
     })
 
@@ -101,7 +83,7 @@ describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
                 
                     expectTypeOf(MongooseUtils.createSchema).toBeCallableWith(schema, modelName)
                     expectTypeOf(MongooseUtils.createSchema<TMongooseSchema>).returns
-                         .toEqualTypeOf<mongoose.Schema<TMongooseSchema>>()
+                        .toEqualTypeOf<mongoose.Schema<TMongooseSchema>>()
                 })
             })
         })
@@ -137,7 +119,7 @@ describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
                 
                     expectTypeOf(mongooseUtils.createModel).toBeCallableWith(schema, modelName)
                     expectTypeOf(mongooseUtils.createModel<TMongooseSchema>).returns.resolves
-                         .toEqualTypeOf<mongoose.Model<TMongooseSchema>>()
+                        .toEqualTypeOf<mongoose.Model<TMongooseSchema>>()
                 })
             })
         })

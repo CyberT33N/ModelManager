@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -40,7 +41,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
     let mongooseUtils: MongooseUtils
 
     let modelDetails: IModel<any>
-    let mongooseSchema: mongoose.Schema<any>
+    let mongooseSchema: mongoose.Schema
 
     let conn: mongoose.Connection
     let mongoServer: MongoMemoryServer
@@ -48,8 +49,8 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
 
     const docData = { name: 'test', decimals: 69n }
 
-    beforeAll(async () => {
-        const modelCoreDetails: IModelCore<any> = await import('@/test/models/Test.model.mjs')
+    beforeAll(async() => {
+        const modelCoreDetails: IModelCore = await import('@/test/models/Test.model.mjs')
         const { modelName, dbName, schema } = modelCoreDetails
         
         // Generate the Mongoose schema type
@@ -107,7 +108,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                 expect(Reflect.get(mongooseUtils, 'dbName')).toBe(modelDetails.dbName)
                 expect(Reflect.get(mongooseUtils, 'conn')).toBe(null)
                 expect(Reflect.get(mongooseUtils, 'connectionString'))
-                .toBe(process.env.MONGODB_CONNECTION_STRING)
+                    .toBe(process.env.MONGODB_CONNECTION_STRING)
             })
 
             it('should create new instance if instance for db not exists', async() => {
@@ -182,7 +183,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                         createConnectionStub.restore()
                     })
 
-                    it('should throw an error when initializing connection with mongoose fails', async () => {
+                    it('should throw an error when initializing connection with mongoose fails', async() => {
                         try {
                             await mongooseUtils['init']()
                             assert.fail('This line should not be reached')
@@ -216,7 +217,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                         createConnectionSpy.restore()
                     })
 
-                    it('should initialize connection with mongoose', async () => {
+                    it('should initialize connection with mongoose', async() => {
                         await mongooseUtils['init']()
 
                         // ==== STUBS ====
@@ -228,10 +229,10 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                         expect(conn.readyState).toBe(1)
                         expect(conn).toBeInstanceOf(mongoose.Connection)
 
-                        const { modelName, schema } = modelDetails
+                        const { modelName } = modelDetails
                         
                         // Create a model using the connection
-                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelDetails.schema>
                         const Model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
 
                         // Test if the created connection model is working

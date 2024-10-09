@@ -57,12 +57,12 @@ class MongooseUtils {
      * Creates a Mongoose schema for a given model.
      * https://mongoosejs.com/docs/guide.html#options
      * @template TMongooseSchema - The type of the Mongoose schema.
-     * @param {mongoose.SchemaDefinition<TMongooseSchema>} schema - The schema definition for the model.
+     * @param {mongoose.SchemaDefinition} schema - The schema definition for the model.
      * @param {string} collectionName - The name of the collection in MongoDB.
      * @returns {mongoose.Schema<TMongooseSchema>} A Mongoose Schema object.
      */
     public static createSchema<TMongooseSchema>(
-        schema: mongoose.SchemaDefinition<TMongooseSchema>,
+        schema: mongoose.SchemaDefinition,
         collectionName: string
     ): mongoose.Schema<TMongooseSchema> {
         const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema, { collection: collectionName })
@@ -115,12 +115,12 @@ class MongooseUtils {
     /**
      * Creates a model for a specified schema and collection name.
      * @template TMongooseSchema - The type of the Mongoose schema.
-     * @param {mongoose.SchemaDefinition<TMongooseSchema>} schema - The schema definition for the model.
+     * @param {mongoose.SchemaDefinition} schema - The schema definition for the model.
      * @param {string} modelName - The name of the model and collection.
      * @returns {Promise<mongoose.Model<TMongooseSchema>>} A Promise that resolves to the Mongoose Model.
      */
     public async createModel<TMongooseSchema>(
-        schema: mongoose.SchemaDefinition<TMongooseSchema>,
+        schema: mongoose.SchemaDefinition,
         modelName: string
     ): Promise<mongoose.Model<TMongooseSchema>> {
         const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, modelName)

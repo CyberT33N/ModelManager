@@ -14,15 +14,15 @@
 */
 
 export {
-     default as ModelManager,
-     type IModelCore, type IModel
+    default as ModelManager,
+    type IModelCore, type IModel
 } from './ModelManager'
 
 export {
-     default as MongooseUtils
+    default as MongooseUtils
 } from './MongooseUtils'
 
 export {
-     default as ModelUtils,
-     type IMemoryModel
+    default as ModelUtils,
+    type IMemoryModel
 } from './ModelUtils'

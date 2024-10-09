@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -43,11 +44,13 @@ export default class ModelUtils {
      * Creates an in-memory Mongoose model using MongoMemoryServer.
      * This is useful for testing or scenarios where a transient, in-memory database is needed.
      *
-     * @param {IModelCore<any>} modelCoreDetail - The model object containing the schema and other details.
-     * @returns {Promise<IMemoryModel>} - An object containing the in-memory model, MongoMemoryServer instance, and connection.
+     * @param {IModelCore} modelCoreDetail - The model 
+     * object containing the schema and other details.
+     * @returns {Promise<IMemoryModel>} - An object containing
+     * the in-memory model, MongoMemoryServer instance, and connection.
      */
     public static async createMemoryModel(
-        modelCoreDetail: IModelCore<any>
+        modelCoreDetail: IModelCore
     ): Promise<IMemoryModel<any>> {
         // Destructure necessary properties from the model object
         const { dbName, schema, modelName } = modelCoreDetail

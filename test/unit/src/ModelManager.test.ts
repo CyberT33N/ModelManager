@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -17,7 +18,7 @@
 import sinon from 'sinon'
 import mongoose from 'mongoose'
 import {
-    describe, it, expect, expectTypeOf,
+    describe, it, expect,
     beforeEach, afterEach, beforeAll
 } from 'vitest'
 
@@ -34,14 +35,19 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
     let modelManager: ModelManager
     let initStub: sinon.SinonStub
 
-    beforeAll(async () => {
-        const { modelName, dbName, schema }: IModelCore<any> = await import('@/test/models/Test.model.mjs')
+    beforeAll(async() => {
+        const {
+            modelName, dbName, schema
+        }: IModelCore = await import('@/test/models/Test.model.mjs')
     
         // Generate the Mongoose schema type
         type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
     
         const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema)
-        // MongooseUtils.createModel() will use a connection model so normally we should use a connection model here aswell. But we are stubbing the createModel method so we can use a normal model here.
+
+        /* MongooseUtils.createModel() will use a connection model so normally
+        we should use a connection model here aswell. But we are stubbing
+        the createModel method so we can use a normal model here.*/
         const Model = mongoose.model<TMongooseSchema>(modelName, mongooseSchema)
     
         modelDetails = {
@@ -49,7 +55,7 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
             Model,
             dbName,
             schema
-        } as IModel<TMongooseSchema>
+        }
     })
 
     beforeEach(async() => {
@@ -132,7 +138,7 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
                 })
             
                 it('should return an array of globbed models', async() => {
-                    const { modelName, dbName, schema, Model } = modelDetails
+                    const { modelName, dbName, schema } = modelDetails
                     const expression = `${process.cwd()}/test/models/**/*.model.mjs`
 
                     const globbedModels = await modelManager['globModels'](expression)

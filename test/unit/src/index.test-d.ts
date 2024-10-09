@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -13,6 +14,7 @@
 ███████████████████████████████████████████████████████████████████████████████
 */
 
+// ==== DEPENDENCIES ====
 import { describe, it, expectTypeOf } from 'vitest'
 
 import type { 
@@ -24,7 +26,7 @@ describe('[TYPE TEST] - src/index.ts', () => {
     describe('[INTERFACES]', () => {
         describe('[ModelManager]', () => {
             it('should have the interface IModelCore', () => {
-                expectTypeOf<IModelCore<any>>().not.toBeUndefined()
+                expectTypeOf<IModelCore>().not.toBeUndefined()
             })
 
             it('should have the interface IModel', () => {

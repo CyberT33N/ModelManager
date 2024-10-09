@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -22,20 +23,20 @@ import MongooseUtils from './MongooseUtils'
  * Interface representing the details of a Mongoose model.
  * @template TSchema - The type of the document.
  */
-export interface IModelCore<TSchema> {
+export interface IModelCore {
     /** The name of the model. */
     modelName: string
     /** The name of the database where the model is stored. */
     dbName: string
     /** The schema used for the model. */
-    schema: mongoose.SchemaDefinition<TSchema>
+    schema: mongoose.SchemaDefinition
 }
 
 /**
  * Interface representing a Mongoose model along with additional metadata.
  * @template TSchema - The type of the document.
  */
-export interface IModel<TSchema> extends IModelCore<TSchema> {
+export interface IModel<TSchema> extends IModelCore {
     /** The Mongoose Model instance. */
     Model: mongoose.Model<TSchema>
 }
@@ -87,18 +88,19 @@ export default class ModelManager {
      * Globs through files to dynamically import Mongoose models and creates typed models.
      * @private
      * @param {string} expression - The glob pattern used to find model files.
-     * @returns {Promise< IModel<mongoose.SchemaDefinition<{}>>[] >} - A promise that resolves to an array of typed Mongoose models.
+     * @returns {Promise< IModel<any>[] >} - A promise that
+     * resolves to an array of typed Mongoose models.
      */
     private async globModels(
         expression: string
-    ): Promise< IModel<mongoose.SchemaDefinition<{}> >[] > {
+    ): Promise< IModel<any>[] > {
         const modelPaths = await glob(expression)
-        const modelDetails: IModel<mongoose.SchemaDefinition<{}>>[] = []
+        const modelDetails: IModel<any>[] = []
 
         for (const path of modelPaths) {
             // Ignore Webpack bundling during dynamic import
             const modelCoreDetail = await import(/* webpackIgnore: true */ path)
-            const { modelName, dbName, schema }: IModelCore<any> = modelCoreDetail
+            const { modelName, dbName, schema }: IModelCore = modelCoreDetail
 
             // Generate the Mongoose schema type
             type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
@@ -126,9 +128,9 @@ export default class ModelManager {
 
     /**
      * Returns all loaded Mongoose models.
-     * @returns {IModel<mongoose.SchemaDefinition<{}>>[]} - A list of all loaded Mongoose models.
+     * @returns {IModel<any>[]} - A list of all loaded Mongoose models.
      */
-    public getModels(): IModel<mongoose.SchemaDefinition<{}>>[] {
+    public getModels(): IModel<any>[] {
         return this.models
     }
 
@@ -137,7 +139,7 @@ export default class ModelManager {
      * @param {string} name - The name of the model.
      * @returns The Mongoose model or `undefined` if not found.
      */
-    public getModel(name: string): IModel<mongoose.SchemaDefinition<{}>> | undefined {
+    public getModel(name: string): IModel<any> | undefined {
         return this.models.find(model => model.modelName === name)
     }
 
@@ -151,7 +153,7 @@ export default class ModelManager {
         modelName,
         schema,
         dbName
-    }: IModelCore<TMongooseSchema>): Promise< mongoose.Model<TMongooseSchema> > {
+    }: IModelCore ): Promise< mongoose.Model<TMongooseSchema> > {
         const mongooseUtils = await MongooseUtils.getInstance(dbName)
         const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
         
