@@ -43,6 +43,7 @@
     }
   },
   "include": [
+    "**/*.mjs",
     "**/*.ts", // Include all .ts (TypeScript) files
     "**/*.tsx" // Include all .tsx (TypeScript + JSX) files
   ],

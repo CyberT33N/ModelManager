@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -99,8 +98,8 @@ export default class ModelManager {
 
         for (const path of modelPaths) {
             // Ignore Webpack bundling during dynamic import
-            const modelCoreDetail = await import(/* webpackIgnore: true */ path)
-            const { modelName, dbName, schema }: IModelCore = modelCoreDetail
+            const modelCoreDetail = await import(/* webpackIgnore: true */ path) as IModelCore
+            const { modelName, dbName, schema } = modelCoreDetail
 
             // Generate the Mongoose schema type
             type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
@@ -154,7 +153,7 @@ export default class ModelManager {
         schema,
         dbName
     }: IModelCore ): Promise< mongoose.Model<TMongooseSchema> > {
-        const mongooseUtils = await MongooseUtils.getInstance(dbName)
+        const mongooseUtils = MongooseUtils.getInstance(dbName)
         const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
         
         // Ensure indexes are created for the model

@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -41,7 +40,6 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
     let mongooseUtils: MongooseUtils
 
     let modelDetails: IModel<any>
-    let mongooseSchema: mongoose.Schema
 
     let conn: mongoose.Connection
     let mongoServer: MongoMemoryServer
@@ -53,10 +51,6 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
         const modelCoreDetails: IModelCore = await import('@/test/models/Test.model.mjs')
         const { modelName, dbName, schema } = modelCoreDetails
         
-        // Generate the Mongoose schema type
-        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-        ;mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema)
-       
         const memoryServerData = await ModelUtils.createMemoryModel(modelCoreDetails)
         mongoServer = memoryServerData.mongoServer
         conn = memoryServerData.conn
@@ -67,7 +61,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
             Model: memoryServerData.Model,
             dbName,
             schema
-        } as IModel<TMongooseSchema>
+        }
     })
 
     afterAll(async() => {
@@ -85,43 +79,35 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
 
     describe('getInstance()', () => {
         describe('[EXISTING INSTANCE]', () => {
-            beforeEach(() => {
-                Reflect.set(mongooseUtils, 'changed', true)
-            })
-             
             it('should get existing instance for db', () => {
                 const mongooseUtils2 = MongooseUtils.getInstance(modelDetails.dbName)
                 expect(mongooseUtils2).toEqual(mongooseUtils)
-
-                expect(Reflect.get(MongooseUtils, 'instances').size).toBe(1)
-                
-                expect(Reflect.get(mongooseUtils2, 'changed')).toBe(true)
-                expect(Reflect.get(mongooseUtils2, 'dbName')).toBe(modelDetails.dbName)
+                expect(MongooseUtils['instances'].size).toBe(1)
+                expect(mongooseUtils2['dbName']).toBe(modelDetails.dbName)
             })
         })
 
         describe('[NEW INSTANCE]', () => {
             const dbName2 = 'test2'
 
-            it('should create new instance and set default properties', async() => {
+            it('should create new instance and set default properties', () => {
                 // Instance will be created in beforeEach
-                expect(Reflect.get(mongooseUtils, 'dbName')).toBe(modelDetails.dbName)
-                expect(Reflect.get(mongooseUtils, 'conn')).toBe(null)
-                expect(Reflect.get(mongooseUtils, 'connectionString'))
-                    .toBe(process.env.MONGODB_CONNECTION_STRING)
+                expect(mongooseUtils['dbName']).toBe(modelDetails.dbName)
+                expect(mongooseUtils['conn']).toBe(null)
+                expect(mongooseUtils['connectionString']).toBe(process.env.MONGODB_CONNECTION_STRING)
             })
 
-            it('should create new instance if instance for db not exists', async() => {
+            it('should create new instance if instance for db not exists', () => {
                 // Instance will be created in beforeEach
                 // ==== INSTANCE #1 ====
-                expect(Reflect.get(MongooseUtils, 'instances').size).toBe(1)
+                expect(MongooseUtils['instances'].size).toBe(1)
 
                 // ==== INSTANCE #2 ====
                 const mongooseUtils2 = MongooseUtils.getInstance(dbName2)
                 expect(mongooseUtils2).toBeInstanceOf(MongooseUtils)
                 expect(mongooseUtils2).not.toEqual(mongooseUtils)
 
-                expect(Reflect.get(MongooseUtils, 'instances').size).toBe(2)
+                expect(MongooseUtils['instances'].size).toBe(2)
             })
         })
     })
@@ -229,10 +215,12 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                         expect(conn.readyState).toBe(1)
                         expect(conn).toBeInstanceOf(mongoose.Connection)
 
-                        const { modelName } = modelDetails
+                        const { modelName, schema } = modelDetails
                         
                         // Create a model using the connection
-                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelDetails.schema>
+                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+                        const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema)
+
                         const Model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
 
                         // Test if the created connection model is working
@@ -304,9 +292,11 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                 let getConnectionStub: sinon.SinonStub
 
                 beforeEach(() => {
+                    const mongooseSchema = new mongoose.Schema(modelDetails.schema)
+
                     createSchemaStub = sinon.stub(
                         MongooseUtils, 'createSchema'
-                    ).returns(mongooseSchema)
+                    ).returns(mongooseSchema as mongoose.Schema<unknown>)
                         
                     getConnectionStub = sinon.stub(
                         MongooseUtils.prototype, 'getConnection' as keyof MongooseUtils

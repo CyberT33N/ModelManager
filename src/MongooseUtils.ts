@@ -22,8 +22,7 @@ import { BaseError } from 'error-manager-helper'
  */
 class MongooseUtils {
     // A map to hold instances of MongooseUtils for different databases
-    // eslint-disable-next-line no-use-before-define
-    private static instances: Map<string, MongooseUtils> = new Map()
+    private static instances = new Map<string, MongooseUtils>()
 
     // MongoDB connection object
     private conn: mongoose.Connection | null = null

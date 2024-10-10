@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -54,7 +53,8 @@ describe('[TYPE TEST] - src/ModelUtils.ts', () => {
          describe('[IMemoryModel]', () => {
              it('should verify interface type', () => {
                 type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelCoreDetails.schema>
-                ;expectTypeOf<IMemoryModel<TMongooseSchema>>()
+
+                expectTypeOf<IMemoryModel<TMongooseSchema>>()
                     .toEqualTypeOf<IMemoryModel_Test<TMongooseSchema>>()
              })
          })
@@ -64,9 +64,16 @@ describe('[TYPE TEST] - src/ModelUtils.ts', () => {
          describe('[STATIC]', () => {
              describe('createMemoryModel()', () => {
                  it('should verify param and return type', () => {
-                     expectTypeOf(ModelUtils.createMemoryModel).toBeCallableWith(modelCoreDetails)
-                     expectTypeOf(ModelUtils.createMemoryModel).returns.resolves
-                         .toEqualTypeOf<IMemoryModel<any>>()
+                     type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelCoreDetails.schema>
+
+                     expectTypeOf(
+                         ModelUtils.createMemoryModel.bind(ModelUtils)
+                     ).toBeCallableWith(modelCoreDetails)
+
+                     expectTypeOf(
+                        ModelUtils.createMemoryModel.bind(ModelUtils)<TMongooseSchema>
+                     ).returns.resolves
+                         .toEqualTypeOf<IMemoryModel<TMongooseSchema>>()
                  })
              })
          })

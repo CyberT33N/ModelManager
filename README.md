@@ -142,18 +142,34 @@ To create an in-memory Mongoose model, utilize the `.createMemoryModel()` method
 ```typescript
 import { ModelUtils } from 'model-manager'
 
+interface IUser {
+    name: string
+    email: string
+}
+
+const schema = {
+    name: String,
+    email: String
+}
+
 const modelDetails = {
     dbName: 'YourDatabaseName',
     modelName: 'YourModelName',
-    schema: {
-        name: String,
-        email: String
-    }
+    schema
 }
 
 // .createMemoryModel() is static method
-const memoryModel = await ModelUtils.createMemoryModel(modelDetails)
+const memoryModel = await ModelUtils.createMemoryModel<IUser>(modelDetails)
+
+const UserModel = memoryModel.Model
+
+// Creating a new user
+const newUser = await UserModel.create({ name: 'John Doe', email: 'john@example.com' });
+
+// Fetching all users
+const users = await UserModel.find({});
 ```
+
 
 <br>
 
@@ -165,24 +181,6 @@ The created in-memory model will return an object containing the following:
 - **mongoServer:** The `MongoMemoryServer` instance that manages the in-memory database. Please check the docs of [MongoDB Memory Server](https://www.npmjs.com/package/mongodb-memory-server) for all options.
 - **conn:** The Mongoose connection instance to the in-memory database.
 
-<br>
-
-## Example of In-Memory Model Usage
-
-Here's how you can interact with the in-memory model:
-
-```typescript
-// Accessing the model
-const UserModel = memoryModel.Model;
-
-// Creating a new user
-const newUser = await UserModel.create({ name: 'John Doe', email: 'john@example.com' });
-
-// Fetching all users
-const users = await UserModel.find({});
-```
-
-- **This setup is particularly useful for parallel unit testing and other scenarios where you need a lightweight, transient database.**
 
 
 </details>
@@ -222,7 +220,7 @@ The **Mongoose Utils** class offers tools for managing and creating Mongoose con
 To `get or create` instance of `MongooseUtils` for a specific database:
 ```typescript
 import { MongooseUtils } from 'model-manager'
-const mongooseUtils = await MongooseUtils.getInstance('YourDatabaseName')
+const mongooseUtils = MongooseUtils.getInstance('YourDatabaseName')
 ```
 
 

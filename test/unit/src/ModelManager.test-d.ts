@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -30,9 +29,10 @@ import ModelManager, {
 
 describe('[TYPE TEST] - src/ModelManager.ts', () => {
     let modelManager: ModelManager
+    let initStub: sinon.SinonStub
+    // Must be set because we only use it as type here
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let schema: mongoose.SchemaDefinition
-    let initStub: sinon.SinonStub
 
     beforeAll(async() => {
         const modelCoreDetails: IModelCore = await import('@/test/models/Test.model.mjs')
@@ -44,7 +44,7 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
         ModelManager['instance'] = null
 
         initStub = sinon.stub(
-            ModelManager.prototype, 'init' as keyof ModelManager
+            modelManager, 'init' as keyof ModelManager
         ).resolves()
 
         modelManager = await ModelManager.getInstance()
@@ -78,7 +78,7 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
         describe('IModel', () => {
             it('should verify interface type', () => {
                 type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-                    ; expectTypeOf<IModel<TMongooseSchema>>()
+                    ;expectTypeOf<IModel<TMongooseSchema>>()
                     .toEqualTypeOf<IModel_Test<TMongooseSchema>>()
             })
         })
@@ -87,20 +87,22 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
     describe('getInstance()', () => {
         it('should verify instance and return type', () => {
             expectTypeOf(modelManager).toEqualTypeOf<ModelManager>()
-            expectTypeOf(ModelManager.getInstance).returns.resolves.toEqualTypeOf<ModelManager>()
+            expectTypeOf(
+                ModelManager.getInstance.bind(ModelManager)
+            ).returns.resolves.toEqualTypeOf<ModelManager>()
         })
     })
 
     describe('[METHODS]', () => {
         describe('[PRIVATE]', () => {
             describe('init()', () => {
-                it('should verify return type', async() => {
+                it('should verify return type', () => {
                     expectTypeOf(modelManager['init']).returns.resolves.toBeVoid()
                 })
             })
 
             describe('globModels()', () => {
-                it('should verify parameter and return type', async() => {
+                it('should verify parameter and return type', () => {
                     expectTypeOf(modelManager['globModels']).parameter(0).toBeString()
                     expectTypeOf(modelManager['globModels']).returns.resolves
                         .toEqualTypeOf<IModel<any>[]>()
@@ -110,14 +112,14 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
 
         describe('[PUBLIC]', () => {
             describe('getModels()', () => {
-                it('should verify return type', async() => {
+                it('should verify return type', () => {
                     expectTypeOf(modelManager['getModels']).returns
                         .toEqualTypeOf<IModel<any>[]>()
                 })
             })
 
             describe('getModel()', () => {
-                it('should verify parameter and return type', async() => {
+                it('should verify parameter and return type', () => {
                     expectTypeOf(modelManager['globModels']).parameter(0).toBeString()
                     expectTypeOf(modelManager['getModel']).returns
                         .toEqualTypeOf<IModel<any> | undefined>()
@@ -125,15 +127,15 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
             })
 
             describe('createModel()', () => {
-                it('should verify parameter and return type', async() => {
+                it('should verify parameter and return type', () => {
                     type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
 
                     expectTypeOf(
-                        modelManager.createModel<TMongooseSchema>
+                        modelManager.createModel.bind(modelManager)<TMongooseSchema>
                     ).parameter(0).toEqualTypeOf<IModelCore>()
 
                     expectTypeOf(
-                        modelManager.createModel<TMongooseSchema>
+                        modelManager.createModel.bind(modelManager)<TMongooseSchema>
                     ).returns.resolves.toEqualTypeOf<mongoose.Model<TMongooseSchema>>()
                 })
             })

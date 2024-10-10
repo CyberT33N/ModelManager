@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -50,6 +49,10 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
         the createModel method so we can use a normal model here.*/
         const Model = mongoose.model<TMongooseSchema>(modelName, mongooseSchema)
     
+        /*
+            Notice that we use IModel<any> as type here because
+            we can not assign the generic in runtime
+        */
         modelDetails = {
             modelName,
             Model,
@@ -154,7 +157,7 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
     
                 it('should return an empty array because no model can be found', async() => {
                     const expression = `${process.cwd()}/**/*.modelNotFound.test.ts`
-                    const result = await Object.getPrototypeOf(modelManager).globModels(expression)
+                    const result = await modelManager['globModels'](expression)
                     expect(result).toEqual([])
                 })
             })
@@ -162,23 +165,25 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
 
         describe('[PUBLIC]', () => {
             describe('getModels()', () => {
-                it('should return all models', async() => {
+                beforeEach(() => {
                     modelManager.models = [modelDetails]
+                })
 
-                    const models = await modelManager.getModels()
+                it('should return all models', () => {
+                    const models = modelManager.getModels()
                     expect(models).toEqual([modelDetails])
                 })
             })
 
             describe('getModel()', () => {
-                it('should return the model with the specified name', async() => {
+                it('should return the model with the specified name', () => {
                     modelManager.models = [modelDetails]
 
                     const result = modelManager.getModel(modelDetails.modelName)
                     expect(result).toEqual(modelDetails)
                 })
 
-                it('should return undefined if the model with the specified name does not exist', async() => {
+                it('should return undefined if the model with the specified name does not exist', () => {
                     const result = modelManager.getModel('NotFound')
                     expect(result).toBeUndefined()
                 })
@@ -189,12 +194,12 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
                 let mongooseUtilsCreateModelStub: sinon.SinonStub
                 let modelCreateIndexesStub: sinon.SinonStub
             
-                beforeEach(async() => {
-                    mongooseUtilsCreateModelStub = sinon.stub().returns(modelDetails.Model)
+                beforeEach(() =>{
+                    mongooseUtilsCreateModelStub = sinon.stub().resolves(modelDetails.Model)
 
-                    mongooseUtilsGetInstanceStub = sinon.stub(MongooseUtils, 'getInstance').resolves({
+                    mongooseUtilsGetInstanceStub = sinon.stub(MongooseUtils, 'getInstance').returns({
                         createModel: mongooseUtilsCreateModelStub
-                    })
+                    } as unknown as MongooseUtils)
                     
                     modelCreateIndexesStub = sinon.stub(modelDetails.Model, 'createIndexes').resolves()
                 })

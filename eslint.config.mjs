@@ -12,13 +12,12 @@
 ███████████████████████████████████████████████████████████████████████████████
 ███████████████████████████████████████████████████████████████████████████████
 */
-// @ts-check
 
 import eslint from '@eslint/js'
 import tseslint from 'typescript-eslint'
 
-
 export default tseslint.config(
+    // ===== ESLINT RULES =====
     {
         ...eslint.configs.recommended,
         rules: {
@@ -51,8 +50,37 @@ export default tseslint.config(
             semi: [2, 'never'],
             'new-cap': 0,
             'one-var': 0,
-            'guard-for-in': 0,
+            'guard-for-in': 0
         }
     },
-    ...tseslint.configs.recommended
+
+    // ===== TSESLINT RULES =====
+    ...tseslint.configs.stylisticTypeChecked,
+    ...tseslint.configs.recommendedTypeChecked,
+    {
+        languageOptions: {
+            parserOptions: {
+                projectService: true,
+                tsconfigRootDir: import.meta.dirname
+            }
+        }
+    },
+    // ...tseslint.configs.recommended,
+    // ...tseslint.configs.strictTypeChecked,
+    //...tseslint.configs.stylisticTypeChecked
+
+    {
+        rules: {
+            // Must be used for Model<any>
+            '@typescript-eslint/no-explicit-any': 'off',
+            // '@typescript-eslint/no-unsafe-assignment': 'off',
+
+            // Disable for private constructor where we use it for singleton pattern
+            '@typescript-eslint/no-empty-function': 'off',
+
+            // Disable for accessing private properties e.g. ModelManager['instance']
+            '@typescript-eslint/dot-notation': 'off'
+
+        }
+    }
 )

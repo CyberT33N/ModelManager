@@ -1,4 +1,3 @@
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 /*
 ███████████████████████████████████████████████████████████████████████████████
 ██******************** PRESENTED BY t33n Software ***************************██
@@ -66,8 +65,8 @@ describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
 
     describe('getInstance()', () => {
         it('should verify param and return type', () => {
-            expectTypeOf(MongooseUtils.getInstance).toBeCallableWith(modelDetails.dbName)
-            expectTypeOf(MongooseUtils.getInstance).returns
+            expectTypeOf(MongooseUtils.getInstance.bind(MongooseUtils)).toBeCallableWith(modelDetails.dbName)
+            expectTypeOf(MongooseUtils.getInstance.bind(MongooseUtils)).returns
                 .toEqualTypeOf<MongooseUtils>()
         })
     })
@@ -81,8 +80,13 @@ describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
                     // Generate the Mongoose schema type
                     type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
                 
-                    expectTypeOf(MongooseUtils.createSchema).toBeCallableWith(schema, modelName)
-                    expectTypeOf(MongooseUtils.createSchema<TMongooseSchema>).returns
+                    expectTypeOf(
+                        MongooseUtils.createSchema.bind(MongooseUtils)
+                    ).toBeCallableWith(schema, modelName)
+
+                    expectTypeOf(
+                        MongooseUtils.createSchema.bind(MongooseUtils)<TMongooseSchema>
+                    ).returns
                         .toEqualTypeOf<mongoose.Schema<TMongooseSchema>>()
                 })
             })
@@ -105,7 +109,7 @@ describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
         describe('[PUBLIC]', () => {
             describe('getConnection()', () => {
                 it('should verify return type', () => {
-                    expectTypeOf(mongooseUtils.getConnection).returns.resolves
+                    expectTypeOf(mongooseUtils.getConnection.bind(mongooseUtils)).returns.resolves
                         .toEqualTypeOf<mongoose.Connection>()
                 })
             })
@@ -117,8 +121,13 @@ describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
                     // Generate the Mongoose schema type
                     type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
                 
-                    expectTypeOf(mongooseUtils.createModel).toBeCallableWith(schema, modelName)
-                    expectTypeOf(mongooseUtils.createModel<TMongooseSchema>).returns.resolves
+                    expectTypeOf(
+                        mongooseUtils.createModel.bind(mongooseUtils)
+                    ).toBeCallableWith(schema, modelName)
+
+                    expectTypeOf(
+                        mongooseUtils.createModel.bind(mongooseUtils)<TMongooseSchema>
+                    ).returns.resolves
                         .toEqualTypeOf<mongoose.Model<TMongooseSchema>>()
                 })
             })

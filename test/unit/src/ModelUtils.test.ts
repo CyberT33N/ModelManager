@@ -29,7 +29,7 @@ import type { IModelCore } from '@/src/ModelManager'
 import ModelUtils from '@/src/ModelUtils'
 
 describe('[UNIT TEST] - src/ModelUtils.ts', () => {
-    let mongooseSchema: mongoose.Schema
+    let mongooseSchema: mongoose.Schema<unknown>
     let modelCoreDetails: IModelCore
 
     const docData = { name: 'test', decimals: 69n }
@@ -37,17 +37,14 @@ describe('[UNIT TEST] - src/ModelUtils.ts', () => {
     beforeAll(async() => {
         const { modelName, dbName, schema }: IModelCore = await import('@/test/models/Test.model.mjs')
 
-          // Generate a TypeScript type for the Mongoose schema's document structure
-          type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+        // Create the Mongoose schema using a utility function
+        mongooseSchema = MongooseUtils.createSchema(schema, modelName)
 
-          // Create the Mongoose schema using a utility function
-          mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, modelName)
-
-          modelCoreDetails = {
-              modelName,
-              dbName,
-              schema
-          }
+        modelCoreDetails = {
+            modelName,
+            dbName,
+            schema
+        }
     })
 
     describe('[METHODS]', () => {
