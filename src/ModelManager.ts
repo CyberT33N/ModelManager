@@ -15,6 +15,7 @@
 import _ from 'lodash'
 import { glob } from 'glob'
 import mongoose from 'mongoose'
+import { ValidationError } from 'error-manager-helper'
 
 import MongooseUtils from './MongooseUtils'
 
@@ -126,6 +127,29 @@ export default class ModelManager {
     }
 
     /**
+     * Adds a new Mongoose model to the instance model collection.
+     *
+     * @template TMongooseSchema - The schema type of the Mongoose model.
+     * @param {IModel<TMongooseSchema>} modelDetails - The details of the model to add.
+     * @throws {Error} If a model with the same name already exists.
+     * @returns {void} This method does not return a value.
+     */
+    private pushModel<TMongooseSchema>(
+        modelDetails: IModel<TMongooseSchema>
+    ): void {
+        const existingModel = this.models.find(model => model.modelName === modelDetails.modelName)
+
+        if (existingModel) {
+            throw new ValidationError(
+                `A model with the name '${modelDetails.modelName}' already exists.`,
+                { modelDetails, existingModel }
+            )
+        }
+
+        this.models.push(modelDetails)
+    }
+
+    /**
      * Returns all loaded Mongoose models.
      * @returns {IModel<any>[]} - A list of all loaded Mongoose models.
      */
@@ -158,6 +182,15 @@ export default class ModelManager {
         
         // Ensure indexes are created for the model
         await Model.createIndexes()
+
+        const modelDetails: IModel<TMongooseSchema> = {
+            modelName,
+            Model,
+            dbName,
+            schema
+        }
+
+        this.models.push(modelDetails)
         return Model
     }
 }

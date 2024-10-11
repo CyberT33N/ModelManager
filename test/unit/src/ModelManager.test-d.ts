@@ -71,14 +71,15 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
 
         describe('IModelCore', () => {
             it('should verify interface type', () => {
-                ; expectTypeOf<IModelCore>().toEqualTypeOf<IModelCore_Test>()
+                expectTypeOf<IModelCore>().toEqualTypeOf<IModelCore_Test>()
             })
         })
 
         describe('IModel', () => {
             it('should verify interface type', () => {
                 type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-                    ;expectTypeOf<IModel<TMongooseSchema>>()
+
+                expectTypeOf<IModel<TMongooseSchema>>()
                     .toEqualTypeOf<IModel_Test<TMongooseSchema>>()
             })
         })
@@ -106,6 +107,18 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
                     expectTypeOf(modelManager['globModels']).parameter(0).toBeString()
                     expectTypeOf(modelManager['globModels']).returns.resolves
                         .toEqualTypeOf<IModel<any>[]>()
+                })
+            })
+
+            describe('pushModel()', () => {
+                it('should verify parameter and return type', () => {
+                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+
+                    expectTypeOf(
+                        modelManager['pushModel']<TMongooseSchema>
+                    ).parameter(0).toEqualTypeOf<IModel<TMongooseSchema>>()
+
+                    expectTypeOf(modelManager['pushModel']).returns.toBeVoid()
                 })
             })
         })

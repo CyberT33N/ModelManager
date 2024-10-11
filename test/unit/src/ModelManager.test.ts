@@ -16,8 +16,9 @@
 // ==== DEPENDENCIES ====
 import sinon from 'sinon'
 import mongoose from 'mongoose'
+import { ValidationError } from 'error-manager-helper'
 import {
-    describe, it, expect,
+    describe, it, expect, assert,
     beforeEach, afterEach, beforeAll
 } from 'vitest'
 
@@ -71,6 +72,7 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
 
         modelManager = await ModelManager.getInstance()
         expect(modelManager).toBeInstanceOf(ModelManager)
+        expect(modelManager.models).toEqual([])
     })
 
     afterEach(() => {
@@ -161,6 +163,34 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
                     expect(result).toEqual([])
                 })
             })
+
+            describe('pushModel()', () => {
+                it('should add a new model to the instance models', () => {
+                    modelManager['pushModel'](modelDetails)
+                    expect(modelManager.models).toEqual([modelDetails])
+                })
+
+                it('should throw an error if a model with the same name already exists', () => {
+                    modelManager.models = [modelDetails]
+
+                    try {
+                        modelManager['pushModel'](modelDetails)
+                        assert.fail('This line should not be reached')
+                    } catch (err) {
+                        if (err instanceof ValidationError) {
+                            const typedErr = err
+            
+                            expect(typedErr.message).toBe(
+                                `A model with the name '${modelDetails.modelName}' already exists.`
+                            )
+                        
+                            return
+                        }
+            
+                        assert.fail('This line should not be reached')
+                    }
+                })
+            })
         })
 
         describe('[PUBLIC]', () => {
@@ -228,6 +258,9 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
             
                     // ==== EXPECTS ====
                     expect(createdModel).toEqual(Model)
+                    expect(
+                        modelManager.models.find(model => model.modelName === modelName)
+                    ).toEqual(modelDetails)
                 })
             })
         })
