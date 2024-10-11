@@ -16,12 +16,11 @@
 // ==== DEPENDENCIES ====
 import mongoose from 'mongoose'
 import sinon from 'sinon'
-import { MongoMemoryServer } from 'mongodb-memory-server'
 
 import {
     describe, it, assert,
     expect, expectTypeOf,
-    beforeEach, afterEach, beforeAll, afterAll
+    beforeEach, afterEach, beforeAll
 } from 'vitest'
 
 import {
@@ -30,43 +29,22 @@ import {
 } from 'error-manager-helper'
 
 // ==== INTERNAL ====
-import type { IModel, IModelCore } from '@/src/ModelManager'
-import ModelUtils from '@/src/ModelUtils'
+import type { IModel } from '@/src/ModelManager'
+import type { IMemoryModel } from '@/src/ModelUtils'
 
 // ==== CODE TO TEST ====
 import MongooseUtils from '@/src/MongooseUtils'
 
 describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
     let mongooseUtils: MongooseUtils
-
     let modelDetails: IModel<any>
+    let memoryModelDetails: IMemoryModel<any>
+    let docData: Record<string, any>
 
-    let conn: mongoose.Connection
-    let mongoServer: MongoMemoryServer
-    let mongoUri: string
-
-    const docData = { name: 'test', decimals: 69n }
-
-    beforeAll(async() => {
-        const modelCoreDetails: IModelCore = await import('@/test/models/Test.model.mjs')
-        const { modelName, dbName, schema } = modelCoreDetails
-        
-        const memoryServerData = await ModelUtils.createMemoryModel(modelCoreDetails)
-        mongoServer = memoryServerData.mongoServer
-        conn = memoryServerData.conn
-        mongoUri = mongoServer.getUri()
-
-        modelDetails = {
-            modelName,
-            Model: memoryServerData.Model,
-            dbName,
-            schema
-        }
-    })
-
-    afterAll(async() => {
-        // Calling stop() will close all connections from each created instance
-        await mongoServer.stop()
+    beforeAll(() => {
+        modelDetails = globalThis.modelDetails
+        memoryModelDetails = globalThis.memoryModelDetails
+        docData = globalThis.docData
     })
 
     beforeEach(() => {
@@ -134,6 +112,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                     const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, {
                         collection: modelName
                     })
+
                     expect(mongooseSchema).toBeInstanceOf(mongoose.Schema)
                     expect(schemaSpy.calledOnceWithExactly(schema, { collection: modelName })).toBe(true)
                 })
@@ -198,7 +177,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
 
                     beforeEach(() => {
                         createConnectionSpy = sinon.spy(mongoose, 'createConnection')
-                        mongooseUtils['connectionString'] = mongoUri
+                        mongooseUtils['connectionString'] = memoryModelDetails.mongoUri
                     })
 
                     afterEach(() => {
@@ -210,7 +189,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
 
                         // ==== STUBS ====
                         expect(updateConnectionStringStub.calledOnce).toBeTruthy()
-                        expect(createConnectionSpy.calledOnceWithExactly(mongoUri)).toBe(true)
+                        expect(createConnectionSpy.calledOnceWithExactly(memoryModelDetails.mongoUri)).toBe(true)
 
                         // ==== CONNECTION ====
                         const conn = mongooseUtils['conn']!
@@ -294,43 +273,68 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                 let getConnectionStub: sinon.SinonStub
 
                 beforeEach(() => {
-                    const mongooseSchema = new mongoose.Schema(modelDetails.schema)
-
                     createSchemaStub = sinon.stub(
                         MongooseUtils, 'createSchema'
-                    ).returns(mongooseSchema as mongoose.Schema<unknown>)
+                    ).returns(global.mongooseSchema as mongoose.Schema<unknown>)
                         
                     getConnectionStub = sinon.stub(
                         MongooseUtils.prototype, 'getConnection' as keyof MongooseUtils
-                    ).resolves(conn)
+                    ).resolves(memoryModelDetails.conn)
                 })
       
                 afterEach(() => {
                     createSchemaStub.restore()
                     getConnectionStub.restore()
                 })
-               
-                it('should create a mongoose model', async() => {
-                    const { modelName, schema } = modelDetails
+
+                describe('[ERROR]', () => {
+                    it('should validate schema and should not allow to create doc', async() => {
+                        const { modelName, schema } = modelDetails
                     
-                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-                    const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
+                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+                        const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
 
-                    // ==== SPIES ====
-                    expect(createSchemaStub.calledOnceWithExactly(
-                        schema, { collection: modelName })
-                    ).toBe(true)
-                    expect(getConnectionStub.calledOnce).toBeTruthy()
+                        // Should throw an error when trying to create a document
+                        try {
+                            const doc = new Model({ notValid: true })
+                            await doc.save()
 
-                    // ==== MODEL ====
-                    expect(Model.modelName).toBe(modelName)
+                            assert.fail('This line should not be reached')
+                        } catch (err) {
+                            if (err instanceof mongoose.Error.ValidationError) {
+                                expect(err.errors.name.message).toEqual('Path `name` is required.')
+                                expect(err.errors.decimals.message).toEqual('Path `decimals` is required.')
+                                return
+                            }
 
-                    // Test if the created connection model is working
-                    const doc = new Model(docData)
-                    await doc.save()
+                            assert.fail('This line should not be reached')
+                        }
+                    })
+                })
 
-                    const foundDoc = await Model.findOne(docData)
-                    expect(foundDoc).toEqual(expect.objectContaining(docData))
+                describe('[SUCCESS]', () => {
+                    it('should create a mongoose model', async() => {
+                        const { modelName, schema } = modelDetails
+                    
+                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+                        const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
+
+                        // ==== SPIES ====
+                        expect(createSchemaStub.calledOnceWithExactly(
+                            schema, { collection: modelName })
+                        ).toBe(true)
+                        expect(getConnectionStub.calledOnce).toBeTruthy()
+
+                        // ==== MODEL ====
+                        expect(Model.modelName).toBe(modelName)
+
+                        // Test if the created connection model is working
+                        const doc = new Model(docData)
+                        await doc.save()
+
+                        const foundDoc = await Model.findOne(docData)
+                        expect(foundDoc).toEqual(expect.objectContaining(docData))
+                    })
                 })
             })
         })

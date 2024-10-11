@@ -32,6 +32,7 @@ class MongooseUtils {
 
     /**
      * Private constructor to prevent direct instantiation.
+     * @private
      * @param {string} dbName - The name of the database to connect to.
      */
     private constructor(readonly dbName: string) {
@@ -41,8 +42,9 @@ class MongooseUtils {
     /**
      * Gets an instance of MongooseUtils for a specified database.
      * If an instance does not exist, a new one will be created.
+     * @static
      * @param {string} dbName - The name of the database.
-     * @returns An instance of MongooseUtils.
+     * @returns {MongooseUtils} An instance of MongooseUtils.
      */
     public static getInstance(dbName: string): MongooseUtils {
         if (!MongooseUtils.instances.has(dbName)) {
@@ -54,6 +56,7 @@ class MongooseUtils {
 
     /**
      * Creates a Mongoose schema for a given model.
+     * @static
      * @template TMongooseSchema - The type of the Mongoose schema.
      * @param {mongoose.SchemaDefinition} schema - The schema definition for the model.
      * https://mongoosejs.com/docs/guide.html#options
@@ -70,8 +73,9 @@ class MongooseUtils {
 
     /**
      * Initializes the MongoDB connection.
+     * @private
      * @throws BaseError if the connection fails.
-     * @returns {void} A Promise that resolves when the connection is established.
+     * @returns {Promise<void>} A Promise that resolves when the connection is established.
      */
     private async init(): Promise<void> {
         console.log('[ModelManager] - Attempting to connect to MongoDB...')
@@ -90,6 +94,7 @@ class MongooseUtils {
 
     /**
      * Updates the connection string to include the database name.
+     * @private
      * @returns {void} A void that esolves when the connection string is updated.
      */
     private updateConnectionString(): void {

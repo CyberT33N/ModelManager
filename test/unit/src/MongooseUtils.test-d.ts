@@ -15,17 +15,15 @@
 
 // ==== DEPENDENCIES ====
 import mongoose from 'mongoose'
-import { MongoMemoryServer } from 'mongodb-memory-server'
 
 import {
     describe, it,
     expect, expectTypeOf,
-    beforeEach, beforeAll, afterAll
+    beforeEach, beforeAll
 } from 'vitest'
 
 // ==== INTERNAL ====
-import type { IModel, IModelCore } from '@/src/ModelManager'
-import ModelUtils from '@/src/ModelUtils'
+import type { IModel } from '@/src/ModelManager'
 
 // ==== CODE TO TEST ====
 import MongooseUtils from '@/src/MongooseUtils'
@@ -33,26 +31,9 @@ import MongooseUtils from '@/src/MongooseUtils'
 describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
     let mongooseUtils: MongooseUtils
     let modelDetails: IModel<any>
-    let mongoServer: MongoMemoryServer
 
-    beforeAll(async() => {
-        const modelCoreDetails: IModelCore = await import('@/test/models/Test.model.mjs')
-        const { modelName, dbName, schema } = modelCoreDetails
-        
-        const memoryServerData = await ModelUtils.createMemoryModel(modelCoreDetails)
-        mongoServer = memoryServerData.mongoServer
-
-        modelDetails = {
-            modelName,
-            Model: memoryServerData.Model,
-            dbName,
-            schema
-        }
-    })
-
-    afterAll(async() => {
-        // Calling stop() will close all connections from each created instance
-        await mongoServer.stop()
+    beforeAll(() => {
+        modelDetails = globalThis.modelDetails
     })
 
     beforeEach(() => {

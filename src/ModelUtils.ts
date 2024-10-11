@@ -32,6 +32,8 @@ export interface IMemoryModel<TSchema> {
     mongoServer: MongoMemoryServer
     /** Mongoose connection instance */
     conn: mongoose.Connection
+    /** The URI of the in-memory database */
+    mongoUri: string
 }
 
 /**
@@ -42,18 +44,18 @@ export default class ModelUtils {
     /**
      * Creates an in-memory Mongoose model using MongoMemoryServer.
      * This is useful for testing or scenarios where a transient, in-memory database is needed.
-     *
+     * @static
      * @template TMongooseSchema - The type of the Mongoose schema.
-     * @param {IModelCore} modelCoreDetail - The model 
+     * @param {IModelCore} modelCoreDetails - The model 
      * object containing the schema and other details.
      * @returns {Promise<IMemoryModel<TMongooseSchema>>} - An object containing
      * the in-memory model, MongoMemoryServer instance, and connection.
      */
     public static async createMemoryModel<TMongooseSchema>(
-        modelCoreDetail: IModelCore
+        modelCoreDetails: IModelCore
     ): Promise<IMemoryModel<TMongooseSchema>> {
         // Destructure necessary properties from the model object
-        const { dbName, schema, modelName } = modelCoreDetail
+        const { dbName, schema, modelName } = modelCoreDetails
 
         // Create the Mongoose schema using a utility function
         const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, {
@@ -66,13 +68,21 @@ export default class ModelUtils {
         })
 
         // Establish a new Mongoose connection to the in-memory database
-        const conn = await mongoose.createConnection(mongoServer.getUri(), { dbName }).asPromise()
+        const conn = await mongoose
+            .createConnection(mongoServer.getUri(), { dbName })
+            .asPromise()
 
         // Create a Mongoose model using the generated schema and the provided model name
         const Model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
 
+        // Get the URI of the in-memory database
+        const mongoUri = mongoServer.getUri()
+
         // Return the created memory model, server, and connection
-        const memoryModel: IMemoryModel<TMongooseSchema> = { Model, mongoServer, conn }
+        const memoryModel: IMemoryModel<TMongooseSchema> = {
+            Model, mongoServer, conn, mongoUri
+        }
+
         return memoryModel
     }
 }

@@ -1,0 +1,16 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`[UNIT TEST] - src/ModelUtils.ts > [SNAPSHOT] > should match the schema snapshot 1`] = `
+{
+  "decimals": {
+    "required": true,
+    "type": [Function],
+  },
+  "name": {
+    "index": true,
+    "required": true,
+    "type": [Function],
+    "unique": true,
+  },
+}
+`;

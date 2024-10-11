@@ -61,6 +61,7 @@ export default class ModelManager {
     /**
      * Returns the singleton instance of the ModelManager.
      * Initializes the instance upon the first call.
+     * @static
      * @returns {Promise<ModelManager>} - The singleton instance of the ModelManager.
      */
     public static async getInstance(): Promise<ModelManager> {
@@ -128,10 +129,10 @@ export default class ModelManager {
 
     /**
      * Adds a new Mongoose model to the instance model collection.
-     *
+     * @private
      * @template TMongooseSchema - The schema type of the Mongoose model.
      * @param {IModel<TMongooseSchema>} modelDetails - The details of the model to add.
-     * @throws {Error} If a model with the same name already exists.
+     * @throws {ValidationError} If a model with the same name already exists.
      * @returns {void} This method does not return a value.
      */
     private pushModel<TMongooseSchema>(
@@ -169,14 +170,15 @@ export default class ModelManager {
     /**
      * Creates a Mongoose model based on the given name, schema, and database name.
      * @template TMongooseSchema - The type of the mongoose schema.
-     * @param modelDetails - An object containing the model's details.
-     * @returns A promise that resolves to the created Mongoose Model instance.
+     * @param {IModelCore} modelDetails - An object containing the model's details.
+     * @returns {Promise<mongoose.Model<TMongooseSchema>>} A promise that resolves
+     * to the created Mongoose Model instance.
      */
     public async createModel<TMongooseSchema>({
         modelName,
         schema,
         dbName
-    }: IModelCore ): Promise< mongoose.Model<TMongooseSchema> > {
+    }: IModelCore ): Promise<mongoose.Model<TMongooseSchema>> {
         const mongooseUtils = MongooseUtils.getInstance(dbName)
         const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
         

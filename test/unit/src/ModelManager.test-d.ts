@@ -32,11 +32,10 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
     let initStub: sinon.SinonStub
     // Must be set because we only use it as type here
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    let schema: mongoose.SchemaDefinition
+    let modelDetails: IModel<any>
 
-    beforeAll(async() => {
-        const modelCoreDetails: IModelCore = await import('@/test/models/Test.model.mjs')
-        schema = modelCoreDetails.schema
+    beforeAll(() => {
+        modelDetails = globalThis.modelDetails
     })
 
     beforeEach(async() => {
@@ -77,7 +76,7 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
 
         describe('IModel', () => {
             it('should verify interface type', () => {
-                type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+                type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelDetails.schema>
 
                 expectTypeOf<IModel<TMongooseSchema>>()
                     .toEqualTypeOf<IModel_Test<TMongooseSchema>>()
@@ -112,7 +111,7 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
 
             describe('pushModel()', () => {
                 it('should verify parameter and return type', () => {
-                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelDetails.schema>
 
                     expectTypeOf(
                         modelManager['pushModel']<TMongooseSchema>
@@ -141,7 +140,7 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
 
             describe('createModel()', () => {
                 it('should verify parameter and return type', () => {
-                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelDetails.schema>
 
                     expectTypeOf(
                         modelManager.createModel.bind(modelManager)<TMongooseSchema>

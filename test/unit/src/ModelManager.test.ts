@@ -19,47 +19,23 @@ import mongoose from 'mongoose'
 import { ValidationError } from 'error-manager-helper'
 import {
     describe, it, expect, assert,
-    beforeEach, afterEach, beforeAll
+    beforeAll,
+    beforeEach, afterEach
 } from 'vitest'
 
 // ==== INTERNAL ====
 import MongooseUtils from '@/src/MongooseUtils'
 
 // ==== CODE TO TEST ====
-import ModelManager, {
-    type IModel, type IModelCore
-} from '@/src/ModelManager'
+import ModelManager, { type IModel } from '@/src/ModelManager'
 
 describe('[UNIT TEST] - src/ModelManager.ts',() => {
-    let modelDetails: IModel<any>
     let modelManager: ModelManager
     let initStub: sinon.SinonStub
+    let modelDetails: IModel<any>
 
-    beforeAll(async() => {
-        const {
-            modelName, dbName, schema
-        }: IModelCore = await import('@/test/models/Test.model.mjs')
-    
-        // Generate the Mongoose schema type
-        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-    
-        const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema)
-
-        /* MongooseUtils.createModel() will use a connection model so normally
-        we should use a connection model here aswell. But we are stubbing
-        the createModel method so we can use a normal model here.*/
-        const Model = mongoose.model<TMongooseSchema>(modelName, mongooseSchema)
-    
-        /*
-            Notice that we use IModel<any> as type here because
-            we can not assign the generic in runtime
-        */
-        modelDetails = {
-            modelName,
-            Model,
-            dbName,
-            schema
-        }
+    beforeAll(() => {
+        modelDetails = globalThis.modelDetails
     })
 
     beforeEach(async() => {
