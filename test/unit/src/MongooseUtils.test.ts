@@ -131,7 +131,9 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                     // Generate the Mongoose schema type
                     type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
                 
-                    const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, modelName)
+                    const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, {
+                        collection: modelName
+                    })
                     expect(mongooseSchema).toBeInstanceOf(mongoose.Schema)
                     expect(schemaSpy.calledOnceWithExactly(schema, { collection: modelName })).toBe(true)
                 })
@@ -315,7 +317,9 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                     const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
 
                     // ==== SPIES ====
-                    expect(createSchemaStub.calledOnceWithExactly(schema, modelName)).toBe(true)
+                    expect(createSchemaStub.calledOnceWithExactly(
+                        schema, { collection: modelName })
+                    ).toBe(true)
                     expect(getConnectionStub.calledOnce).toBeTruthy()
 
                     // ==== MODEL ====

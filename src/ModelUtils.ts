@@ -56,8 +56,10 @@ export default class ModelUtils {
         const { dbName, schema, modelName } = modelCoreDetail
 
         // Create the Mongoose schema using a utility function
-        const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, modelName)
-
+        const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, {
+            collection: modelName
+        })
+        
         // Create a new instance of MongoMemoryServer for the in-memory database
         const mongoServer = await MongoMemoryServer.create({
             instance: { dbName }

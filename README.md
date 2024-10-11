@@ -238,8 +238,12 @@ const conn = await mongooseUtils.getConnection()
 
 <br>
 
-## .createSchema()
-You can create a mongoose schema as follows:
+## .createSchema() [STATIC METHOD]
+- Will create the mongoose schema
+
+### Arguments:
+- **1**: `{string}` - Schema
+- **2**: `{object}` - Mongoose Schema Options (https://mongoosejs.com/docs/guide.html#options)
 
 ```typescript
 interface IUser {
@@ -252,10 +256,9 @@ const schema = {
     email: String
 }
 
-// .createSchema() is static method
 const model = await MongooseUtils.createSchema<IUser>(
     schema,
-    collectionName
+    { collection: 'test' }
 )
 ```
 

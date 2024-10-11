@@ -54,17 +54,17 @@ class MongooseUtils {
 
     /**
      * Creates a Mongoose schema for a given model.
-     * https://mongoosejs.com/docs/guide.html#options
      * @template TMongooseSchema - The type of the Mongoose schema.
      * @param {mongoose.SchemaDefinition} schema - The schema definition for the model.
-     * @param {string} collectionName - The name of the collection in MongoDB.
+     * https://mongoosejs.com/docs/guide.html#options
+     * @param {mongoose.SchemaOptions<any>} options - The schema options.
      * @returns {mongoose.Schema<TMongooseSchema>} A Mongoose Schema object.
      */
     public static createSchema<TMongooseSchema>(
         schema: mongoose.SchemaDefinition,
-        collectionName: string
+        options: mongoose.SchemaOptions<any>
     ): mongoose.Schema<TMongooseSchema> {
-        const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema, { collection: collectionName })
+        const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema, options)
         return mongooseSchema
     }
 
@@ -122,7 +122,10 @@ class MongooseUtils {
         schema: mongoose.SchemaDefinition,
         modelName: string
     ): Promise<mongoose.Model<TMongooseSchema>> {
-        const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, modelName)
+        const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, {
+            collection: modelName
+        })
+        
         const conn = await this.getConnection()
 
         const model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)

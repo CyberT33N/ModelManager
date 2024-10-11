@@ -38,7 +38,7 @@ describe('[UNIT TEST] - src/ModelUtils.ts', () => {
         const { modelName, dbName, schema }: IModelCore = await import('@/test/models/Test.model.mjs')
 
         // Create the Mongoose schema using a utility function
-        mongooseSchema = MongooseUtils.createSchema(schema, modelName)
+        mongooseSchema = MongooseUtils.createSchema(schema, { collection: modelName })
 
         modelCoreDetails = {
             modelName,
@@ -76,7 +76,7 @@ describe('[UNIT TEST] - src/ModelUtils.ts', () => {
 
                     // ==== SPIES/STUBS ====
                     expect(mongooseUtilsCreateSchemaStub.calledOnceWithExactly(
-                        schema, modelName)
+                        schema, { collection: modelName })
                     ).toBe(true)
 
                     expect(mongoMemoryServerSpy.calledOnceWithExactly({

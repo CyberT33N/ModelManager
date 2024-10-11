@@ -82,7 +82,7 @@ describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
                 
                     expectTypeOf(
                         MongooseUtils.createSchema.bind(MongooseUtils)
-                    ).toBeCallableWith(schema, modelName)
+                    ).toBeCallableWith(schema, { collection: modelName })
 
                     expectTypeOf(
                         MongooseUtils.createSchema.bind(MongooseUtils)<TMongooseSchema>
