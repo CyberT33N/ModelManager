@@ -1,3 +1,12 @@
+# [1.3.0](https://github.com/CyberT33N/ModelManager/compare/v1.2.0...v1.3.0) (2024-10-12)
+
+
+### Features
+
+* **CCS-001:** find type test for .getModel() ([4cd2ba3](https://github.com/CyberT33N/ModelManager/commit/4cd2ba3be2933d5112d93991bae94d9c60d7e3e4))
+
+
+
 # [1.2.0](https://github.com/CyberT33N/ModelManager/compare/v1.1.0...v1.2.0) (2024-10-12)
 
 
