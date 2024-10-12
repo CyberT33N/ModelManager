@@ -3,4 +3,5 @@ dist
 coverage
 .tsbuildInfo
 test.ts
+test.mjs
 TODO.md

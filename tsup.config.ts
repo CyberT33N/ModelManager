@@ -9,6 +9,10 @@ export default defineConfig({
     format: ['cjs', 'esm'], // Build for commonJS and ESmodules
     dts: true, // Generate declaration file (.d.ts)
     splitting: false,
+    // outExtension: ({ format }) => {
+    //     if (format === 'esm') return { js: '.mjs' }  // Setze die Dateiendung auf .mjs für ESM
+    //     return { js: '.js' }     // Fallback auf .js für andere Formate
+    // },
     sourcemap: true,
     clean: true
 })

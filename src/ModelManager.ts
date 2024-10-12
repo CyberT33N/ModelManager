@@ -100,6 +100,7 @@ export default class ModelManager {
 
         for (const path of modelPaths) {
             // Ignore Webpack bundling during dynamic import
+            console.log('[ModelManager] - Importing Model:', path)
             const modelCoreDetail = await import(/* webpackIgnore: true */ path) as IModelCore
             const { modelName, dbName, schema } = modelCoreDetail
 
