@@ -24,7 +24,7 @@
     "mongoose",
     "model",
     "manager",
-    "model-manager",
+    "mongoose-model-manager",
     "mongodb",
     "node"
   ],

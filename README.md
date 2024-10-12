@@ -35,7 +35,7 @@ MONGODB_CONNECTION_STRING=mongodb://root:test@192.168.49.2.nip.io:30644/?authSou
 The `ModelManager` is a singleton class. To get the instance and initialize it, use the following code:
 
 ```typescript
-import { ModelManager } from 'model-manager'
+import { ModelManager } from 'mongoose-model-manager'
 const modelManager = await ModelManager.getInstance()
 ```
 
@@ -151,7 +151,7 @@ The **Model Utils** class specializes at the moment in creating in-memory models
 
 
 ```typescript
-import { ModelUtils } from 'model-manager'
+import { ModelUtils } from 'mongoose-model-manager'
 
 interface IUser {
     name: string
@@ -231,7 +231,7 @@ The **Mongoose Utils** class offers tools for managing and creating Mongoose con
 
 To `get or create` instance of `MongooseUtils` for a specific database:
 ```typescript
-import { MongooseUtils } from 'model-manager'
+import { MongooseUtils } from 'mongoose-model-manager'
 const mongooseUtils = MongooseUtils.getInstance('YourDatabaseName')
 ```
 
