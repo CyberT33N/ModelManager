@@ -141,12 +141,10 @@ const newModel = await modelManager.createModel<IUser>({
 <br><br>
 
 # 🔗 Model Utils
-
-<details><summary>Click to expand..</summary>
-
-- The **Model Utils** class specializes at the moment in creating in-memory models using [MongoDB Memory Server](https://www.npmjs.com/package/mongodb-memory-server) but will maybe extended in the future.
+The **Model Utils** class specializes at the moment in creating in-memory models using [MongoDB Memory Server](https://www.npmjs.com/package/mongodb-memory-server) but will maybe extended in the future.
 . This utility is crucial for parallel testing scenarios that require transient databases, allowing developers to create isolated environments that mimic real MongoDB behavior without persistent storage overhead.
 
+<details><summary>Click to expand..</summary>
 
 <br>
 
