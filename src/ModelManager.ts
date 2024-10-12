@@ -15,7 +15,7 @@
 import _ from 'lodash'
 import { glob } from 'glob'
 import mongoose from 'mongoose'
-import { ValidationError } from 'error-manager-helper'
+import { ValidationError, ResourceNotFoundError } from 'error-manager-helper'
 
 import MongooseUtils from './MongooseUtils'
 
@@ -164,7 +164,16 @@ export default class ModelManager {
      * @returns The Mongoose model or `undefined` if not found.
      */
     public getModel(name: string): IModel<any> | undefined {
-        return this.models.find(model => model.modelName === name)
+        const modelDetails = this.models.find(model => model.modelName === name)
+
+        if (!modelDetails) {
+            throw new ResourceNotFoundError(
+                `[Model Manager] - Model '${name}' not found.`,
+                { name }
+            )
+        }
+
+        return modelDetails
     }
 
     /**

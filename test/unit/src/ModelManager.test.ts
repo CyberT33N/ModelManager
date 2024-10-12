@@ -16,7 +16,7 @@
 // ==== DEPENDENCIES ====
 import sinon from 'sinon'
 import mongoose from 'mongoose'
-import { ValidationError } from 'error-manager-helper'
+import { ValidationError, ResourceNotFoundError } from 'error-manager-helper'
 import {
     describe, it, expect, assert,
     beforeAll,
@@ -182,16 +182,31 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
             })
 
             describe('getModel()', () => {
-                it('should return the model with the specified name', () => {
-                    modelManager.models = [modelDetails]
+                describe('[ERROR]', () => {
+                    it('should throw error if the model with the specified name is not found', () => {
+                        try {
+                            modelManager.getModel('not-found')
+                            assert.fail('This line should not be reached')
+                        } catch (err) {
+                            if (err instanceof ResourceNotFoundError) {
+                                expect(err.message).toEqual(
+                                    '[Model Manager] - Model \'not-found\' not found.'
+                                )
 
-                    const result = modelManager.getModel(modelDetails.modelName)
-                    expect(result).toEqual(modelDetails)
+                                return
+                            }
+
+                            assert.fail('This line should not be reached')
+                        }
+                    })
                 })
+                describe('[SUCCESS]', () => {
+                    it('should return the model with the specified name', () => {
+                        modelManager.models = [modelDetails]
 
-                it('should return undefined if the model with the specified name does not exist', () => {
-                    const result = modelManager.getModel('NotFound')
-                    expect(result).toBeUndefined()
+                        const result = modelManager.getModel(modelDetails.modelName)
+                        expect(result).toEqual(modelDetails)
+                    })
                 })
             })
 
