@@ -235,7 +235,6 @@ import { MongooseUtils } from 'mongoose-model-manager'
 const mongooseUtils = MongooseUtils.getInstance('YourDatabaseName')
 ```
 
-
 <br>
 
 ## .getConnection()
