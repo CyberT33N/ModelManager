@@ -134,7 +134,7 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
                 it('should verify parameter and return type', () => {
                     expectTypeOf(modelManager['globModels']).parameter(0).toBeString()
                     expectTypeOf(modelManager['getModel']).returns
-                        .toEqualTypeOf<IModel<any> | undefined>()
+                        .toEqualTypeOf<IModel<any>>()
                 })
             })
 

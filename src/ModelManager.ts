@@ -163,7 +163,7 @@ export default class ModelManager {
      * @param {string} name - The name of the model.
      * @returns The Mongoose model or `undefined` if not found.
      */
-    public getModel(name: string): IModel<any> | undefined {
+    public getModel(name: string): IModel<any> {
         const modelDetails = this.models.find(model => model.modelName === name)
 
         if (!modelDetails) {
