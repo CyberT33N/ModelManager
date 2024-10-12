@@ -1,4 +1,13 @@
-# 1.1.0 (2024-10-12)
+# [1.2.0](https://github.com/CyberT33N/ModelManager/compare/v1.1.0...v1.2.0) (2024-10-12)
+
+
+### Features
+
+* **CCS-001:** added error test 'should throw error if the model with the specified name is not found' ([462d305](https://github.com/CyberT33N/ModelManager/commit/462d30565f1845901902fbb36075caf2fd82efd5))
+
+
+
+# [1.1.0](https://github.com/CyberT33N/ModelManager/compare/fa26983af8ecab8f0271b7b41cf9c7bbbfc42028...v1.1.0) (2024-10-12)
 
 
 ### Features
