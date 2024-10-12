@@ -1,3 +1,12 @@
+# [1.4.0](https://github.com/CyberT33N/ModelManager/compare/v1.3.0...v1.4.0) (2024-10-12)
+
+
+### Features
+
+* **CCS-001:** moved mongodb-memory-server to dependencies ([a91ed95](https://github.com/CyberT33N/ModelManager/commit/a91ed95cd52bd70c84e3a3117983c2189ce459e1))
+
+
+
 # [1.3.0](https://github.com/CyberT33N/ModelManager/compare/v1.2.0...v1.3.0) (2024-10-12)
 
 
