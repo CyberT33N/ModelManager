@@ -29,7 +29,9 @@ import ModelManager, { type IModel } from '@/src/ModelManager'
 import ModelUtils, { type IMemoryModel } from '@/src/ModelUtils'
 
 // ==== CODE TO TEST ====
-import FixturesManager, { type IFixtureDoc, type IFixtures} from '@/src/FixturesManager'
+import FixturesManager, {
+    type IFixtureDoc, type IFixtures, type IFixture, type IFixtureInserted
+} from '@/src/FixturesManager'
 
 describe('[UNIT TEST] - src/FixtureManager.ts', () => {
     let fixturesManager: FixturesManager
@@ -272,7 +274,7 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                         toObjectStub.restore()
                     })
 
-                    it.only('should insert documents into the specified collections', async() => {
+                    it('should insert documents into the specified collections', async() => {
                         const result = await fixturesManager.insert([docId])
 
                         // ==== SPIES/STUBS ====
@@ -300,6 +302,26 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                         expect(result[docId].name).toEqual(fixturesDoc.name)
                         expect(result[docId].docToObject).toEqual(expectedToObjectDoc)
                     })
+                })
+            })
+
+            describe('clean()', () => {
+                let mongoServerStub: sinon.SinonStub
+
+                beforeEach(() => {
+                    fixturesManager.fixtures = fixtures
+
+                    mongoServerStub = sinon.stub()
+                    Reflect.set(fixturesManager.getFixture(docId)!, 'mongoServer', {
+                        stop: mongoServerStub
+                    })
+                })
+
+                it('should clean up the fixtures', async() => {
+                    expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(fixturesDoc)
+                    await fixturesManager.clean([docId])
+                    expect(fixturesManager.fixtures[dbName][collectionName]).toEqual({undefined})
+                    expect(mongoServerStub.calledOnce).toBe(true)
                 })
             })
 

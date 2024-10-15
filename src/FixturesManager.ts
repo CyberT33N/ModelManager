@@ -245,25 +245,47 @@ class FixturesManager {
     }
 
     /**
-     * Cleans up all fixtures and stops associated MongoMemoryServer instances.
+     * Cleans up fixtures and stops associated MongoMemoryServer instances.
      * @async
+     * @param {string[]} ids - Array of fixture IDs to clean up.
      * @returns {Promise<void>} Resolves when cleanup is complete.
      */
-    public async cleanAll(): Promise<void> {
-        for (const dbName in this.fixtures) {
-            for (const collectionName in this.fixtures[dbName]) {
-                for (const id in this.fixtures[dbName][collectionName]) {
+    public async clean(ids: string[]): Promise<void> {
+        await Promise.all(ids.map(async id => {
+            for (const dbName in this.fixtures) {
+                for (const collectionName in this.fixtures[dbName]) {
                     const fixture = this.fixtures[dbName][collectionName][id]
 
                     if ('mongoServer' in fixture) {
                         // Stop the specific memory server for this fixture
                         await fixture.mongoServer.stop()
                     }
+
+                    delete this.fixtures[dbName][collectionName][id]
+                }
+            }
+        }))
+    }
+
+    /**
+     * Cleans up all fixtures and stops associated MongoMemoryServer instances.
+     * @async
+     * @returns {Promise<void>} Resolves when cleanup is complete.
+     */
+    public async cleanAll(): Promise<void> {
+        const stops = []
+        
+        for (const db of Object.values(this.fixtures)) {
+            for (const collection of Object.values(db)) {
+                for (const fixture of Object.values(collection)) {
+                    if ('mongoServer' in fixture) {
+                        stops.push(fixture.mongoServer.stop())
+                    }
                 }
             }
         }
 
-        // Clear all fixtures after cleanup
+        await Promise.all(stops)
         this.fixtures = {}
     }
 
