@@ -1,0 +1,290 @@
+/*
+███████████████████████████████████████████████████████████████████████████████
+██******************** PRESENTED BY t33n Software ***************************██
+██                                                                           ██
+██                  ████████╗██████╗ ██████╗ ███╗   ██╗                      ██
+██                  ╚══██╔══╝╚════██╗╚════██╗████╗  ██║                      ██
+██                     ██║    █████╔╝ █████╔╝██╔██╗ ██║                      ██
+██                     ██║    ╚═══██╗ ╚═══██╗██║╚██╗██║                      ██
+██                     ██║   ██████╔╝██████╔╝██║ ╚████║                      ██
+██                     ╚═╝   ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝                      ██
+██                                                                           ██
+███████████████████████████████████████████████████████████████████████████████
+███████████████████████████████████████████████████████████████████████████████
+*/
+
+// ==== DEPENDENCIES ====
+import _ from 'lodash'
+import path from 'path'
+import { glob } from 'glob'
+import mongoose from 'mongoose'
+import { ValidationError, ResourceNotFoundError } from 'error-manager-helper'
+import { MongoMemoryServer } from 'mongodb-memory-server'
+
+// ==== INTERNAL DEPENDENCIES ====
+import ModelUtils from './ModelUtils'
+import ModelManager from './ModelManager'
+
+/**
+ * Represents a fixture document with a name and document contents.
+ * @interface
+ * @property {string} name - The name identifying the fixture.
+ * @property {Object} docContents - The contents of the fixture document.
+ * @property {mongoose.Types.ObjectId} docContents._id - Unique Mongoose ObjectId for the document.
+ * @property {string} docContents.name - Name field of the fixture document.
+ * @property {Record<string, any>} [docContents.key] - Additional dynamic properties of the document.
+ */
+export interface IFixtureDoc {
+    name: string
+    docContents: {
+        _id: mongoose.Types.ObjectId;
+        name: string;
+        [key: string]: any;
+    }
+}
+
+/**
+ * Represents an inserted fixture containing both the original document
+ * and its lean (plain object) version, along with the Mongoose model reference.
+ * @interface
+ * @property {(mongoose.Document<unknown> & Required<{ _id: unknown }>) | null} doc - 
+ *    The inserted Mongoose document instance, or null if not available.
+ * @property {(mongoose.FlattenMaps<unknown> & Required<{ _id: unknown }>) | null} docLean - 
+ *    The lean version of the inserted document, or null if not available.
+ * @property {{ [x: string]: any } & Required<{ _id: unknown }> | undefined} docToObject - 
+ *    Plain JavaScript object representation of the inserted document.
+ * @property {mongoose.Model<any>} Model - Reference to the Mongoose model used for the insertion.
+ * @property {MongoMemoryServer} mongoServer - Instance of the in-memory MongoDB server used.
+ */
+export interface IFixtureInserted {
+    doc: (mongoose.Document<unknown> & Required<{ _id: unknown; }>) | null
+    docLean: (mongoose.FlattenMaps<unknown> & Required<{ _id: unknown; }>) | null
+    docToObject: ({ [x: string]: any; } & Required<{ _id: unknown; }>) | undefined
+    Model: mongoose.Model<any>
+    mongoServer: MongoMemoryServer
+}
+
+/**
+ * Combines both the original fixture document and the inserted fixture information.
+ * @typedef {IFixtureDoc & IFixtureInserted} IFixture
+ */
+export type IFixture = IFixtureDoc & IFixtureInserted
+
+/**
+ * Represents the entire structure of test fixtures loaded from files.
+ * The structure is nested as: database name -> collection name -> fixture ID.
+ * 
+ * Once fixtures are inserted, they are extended with `IFixtureInserted` data.
+ * @template T - Type of the fixture, either a document or an inserted object.
+ * @interface
+ * @property {Record<string, Record<string, Record<string, T>>>} fixtures - 
+ *    The fixture hierarchy indexed by database name, collection name, and fixture ID.
+ */
+export interface IFixtures<T> {
+    [dbName: string]: {
+        [collectionName: string]: {
+            [id: string]: T
+        }
+    }
+}
+
+/**
+ * Manages test fixtures for MongoDB memory server and Mongoose models.
+ * Implements the Singleton pattern to ensure a single instance.
+ * @class
+ */
+class FixturesManager {
+    // eslint-disable-next-line no-use-before-define
+    private static instance: FixturesManager
+    private modelManager!: ModelManager
+    public fixtures: IFixtures<IFixtureInserted | IFixtureDoc> = {}
+
+    /**
+     * Private constructor to enforce Singleton pattern.
+     * Use `getInstance()` to access the FixturesManager instance.
+     * @private
+     */
+    private constructor() {}
+
+    /**
+     * Retrieves the singleton instance of FixturesManager.
+     * Initializes the instance on first access.
+     * @static
+     * @async
+     * @returns {Promise<FixturesManager>} Singleton instance of FixturesManager.
+     */
+    public static async getInstance(): Promise<FixturesManager> {
+        if (!this.instance) {
+            this.instance = new FixturesManager()
+            await this.instance.init()
+        }
+
+        return this.instance
+    }
+
+    /**
+     * Initializes the FixturesManager by loading fixtures and models.
+     * @private
+     * @async
+     * @returns {Promise<void>} Resolves when initialization is complete.
+     */
+    private async init(): Promise<void> {
+        if (_.isEmpty(this.fixtures)) {
+            const expression = `${process.cwd()}/test/fixtures/**/*.ts`
+            this.fixtures = await this.globFixtures(expression)
+        }
+
+        // Load models using ModelManager
+        this.modelManager = await ModelManager.getInstance()
+    }
+
+    /**
+     * Loads fixture files matching the given glob pattern.
+     * Organizes them by database and collection names.
+     * @private
+     * @async
+     * @param {string} expression - Glob pattern to match fixture files.
+     * @returns {Promise<IFixtures<IFixtureDoc>>} The loaded fixture documents.
+     * @throws {ValidationError} If duplicate fixture IDs are found.
+     */
+    private async globFixtures(
+        expression: string
+    ): Promise<IFixtures<IFixtureDoc>> {
+        const filePaths = glob.sync(expression)
+        const fixtures: IFixtures<IFixtureDoc> = {}
+
+        for (const filePath of filePaths) {
+            const [dbName, collectionName] = filePath.split(path.sep).slice(-3, -1)
+            const { docContents, name } = await import(/* webpackIgnore: true */ filePath) as IFixtureDoc
+            const id = docContents._id.toString()
+
+            // Ensure the fixture structure is initialized
+            fixtures[dbName] ??= {}
+            fixtures[dbName][collectionName] ??= {}
+
+            // Check for duplicate fixtures by ID
+            if (fixtures[dbName][collectionName][id]) {
+                throw new ValidationError(`[Model Manager] - Duplicated fixture id: ${id}`, {
+                    docContents, dbName, collectionName
+                })
+            }
+
+            // Assign the fixture to the structure
+            fixtures[dbName][collectionName][id] = {
+                docContents, name
+
+            }
+        }
+
+        return fixtures
+    }
+
+    /**
+     * Inserts specified fixtures into the in-memory MongoDB instance.
+     * @async
+     * @param {string[]} ids - Array of fixture IDs to insert.
+     * @returns {Promise<Record<string, IFixture>>} The inserted fixture data.
+     * @throws {ValidationError} If the fixture has already been inserted.
+     * @throws {ResourceNotFoundError} If the fixture ID is not found.
+     */
+    public async insert(ids: string[]): Promise<{ [id: string]: IFixture }> {
+        const result: { [id: string]: IFixture } = {}
+
+        await Promise.all(ids.map(async id => {
+            for (const [dbName, collections] of Object.entries(this.fixtures)) {
+                for (const [collectionName, fixtures] of Object.entries(collections)) {
+                    const fixture = fixtures[id]
+
+                    // If fixture already inserted throw error
+                    if ('Model' in fixture) {
+                        throw new ValidationError(`[Model Manager] - Fixture already inserted: ${id}`, {
+                            fixture, id, dbName, collectionName
+                        })
+                    }
+
+                    if ('docContents' in fixture) {
+                        // Retrieve Mongoose model for the collection
+                        const { schema } = this.modelManager.getModel(collectionName)
+                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+
+                        // Create the in-memory model and insert the fixture
+                        const { Model, mongoServer } = await ModelUtils.createMemoryModel<TMongooseSchema>({
+                            dbName, modelName: collectionName, schema
+                        })
+
+                        // Insert the fixture document data
+                        await Model.create<TMongooseSchema>(fixture.docContents)
+
+                        // Fetch the document in lean and full forms
+                        const docLean = await Model.findOne({ _id: id }).lean()
+                        const doc = await Model.findOne({ _id: id })
+
+                        // Store the processed fixture object
+                        const fixtureObject: IFixture = {
+                            name: fixture.name,
+                            docContents: fixture.docContents,
+                            doc,
+                            docLean,
+                            docToObject: doc?.toObject(),
+                            Model,
+                            mongoServer
+                        }
+
+                        this.fixtures[dbName][collectionName][id] = fixtureObject
+                        result[id] = fixtureObject
+                    } else {
+                        throw new ResourceNotFoundError(`[Model Manager] - Fixture not found: ${id}`, {
+                            id, dbName, collectionName
+                        })
+                    }
+                }
+            }
+        }))
+
+        return result
+    }
+
+    /**
+     * Cleans up all fixtures and stops associated MongoMemoryServer instances.
+     * @async
+     * @returns {Promise<void>} Resolves when cleanup is complete.
+     */
+    public async cleanAll(): Promise<void> {
+        for (const dbName in this.fixtures) {
+            for (const collectionName in this.fixtures[dbName]) {
+                for (const id in this.fixtures[dbName][collectionName]) {
+                    const fixture = this.fixtures[dbName][collectionName][id]
+
+                    if ('mongoServer' in fixture) {
+                        // Stop the specific memory server for this fixture
+                        await fixture.mongoServer.stop()
+                    }
+                }
+            }
+        }
+
+        // Clear all fixtures after cleanup
+        this.fixtures = {}
+    }
+
+    /**
+     * Retrieves a specific fixture by its ID.
+     * @param {string} id - The ID of the fixture to retrieve.
+     * @returns {IFixtureDoc | IFixtureInserted | null} The fixture if found, otherwise null.
+     */
+    public getFixture(id: string): IFixtureDoc | IFixtureInserted | null {
+        for (const dbName in this.fixtures) {
+            for (const collectionName in this.fixtures[dbName]) {
+                const fixture = this.fixtures[dbName][collectionName][id]
+
+                if (fixture) {
+                    return fixture
+                }
+            }
+        }
+
+        return null
+    }
+}
+
+export default FixturesManager

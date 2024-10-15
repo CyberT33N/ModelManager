@@ -12,11 +12,13 @@
 ███████████████████████████████████████████████████████████████████████████████
 */
 
+// ==== DEPENDENCIES ====
 import _ from 'lodash'
 import { glob } from 'glob'
 import mongoose from 'mongoose'
 import { ValidationError, ResourceNotFoundError } from 'error-manager-helper'
 
+// ==== INTERNAL DEPENDENCIES ====
 import MongooseUtils from './MongooseUtils'
 
 /**
@@ -47,7 +49,7 @@ export interface IModel<TSchema> extends IModelCore {
  */
 export default class ModelManager {
     // eslint-disable-next-line no-use-before-define
-    private static instance: ModelManager | null = null
+    private static instance: ModelManager
 
     /** A list of all loaded models. */
     public models: IModel<any>[] = []

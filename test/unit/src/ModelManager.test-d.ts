@@ -40,7 +40,7 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
 
     beforeEach(async() => {
         // Reset instance before creating a new one
-        ModelManager['instance'] = null
+        Reflect.set(ModelManager, 'instance', undefined)
 
         initStub = sinon.stub(
             modelManager, 'init' as keyof ModelManager

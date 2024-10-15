@@ -25,7 +25,7 @@ class MongooseUtils {
     private static instances = new Map<string, MongooseUtils>()
 
     // MongoDB connection object
-    private conn: mongoose.Connection | null = null
+    private conn: mongoose.Connection | null = null // Must be initialized as null for constructor
 
     // Connection string for MongoDB
     private connectionString: string

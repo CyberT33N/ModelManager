@@ -29,7 +29,7 @@ import MongooseUtils from '@/src/MongooseUtils'
 // ==== CODE TO TEST ====
 import ModelManager, { type IModel } from '@/src/ModelManager'
 
-describe('[UNIT TEST] - src/ModelManager.ts',() => {
+describe('[UNIT TEST] - src/ModelManager.ts', () => {
     let modelManager: ModelManager
     let initStub: sinon.SinonStub
     let modelDetails: IModel<any>
@@ -40,15 +40,13 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
 
     beforeEach(async() => {
         // Reset instance before creating a new one
-        ModelManager['instance'] = null
+        Reflect.set(ModelManager, 'instance', undefined)
 
         initStub = sinon.stub(
             ModelManager.prototype, 'init' as keyof ModelManager
         ).resolves()
 
         modelManager = await ModelManager.getInstance()
-        expect(modelManager).toBeInstanceOf(ModelManager)
-        expect(modelManager.models).toEqual([])
     })
 
     afterEach(() => {
@@ -58,6 +56,7 @@ describe('[UNIT TEST] - src/ModelManager.ts',() => {
     describe('getInstance()', () => {
         it('should create new instance', () => {
             expect(initStub.calledOnce).toBe(true)
+            expect(modelManager).toBeInstanceOf(ModelManager)
             expect(modelManager.models).toEqual([])
         })
 

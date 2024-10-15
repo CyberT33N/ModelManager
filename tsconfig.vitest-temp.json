@@ -1,0 +1,59 @@
+{
+  "ts-node": {
+    "esm": true,
+    "require": [
+      "tsconfig-paths/register"
+    ],
+    "compilerOptions": {
+      "target": "ES2022",
+      "module": "NodeNext",
+      "baseUrl": ".",
+      "paths": {
+        "@/*": [
+          "./"
+        ]
+      }
+    }
+  },
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext",
+      "es2022"
+    ],
+    "allowJs": true,
+    "outDir": "./dist",
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "tsBuildInfoFile": "/home/t33n/Projects/ModelManager/node_modules/vitest/dist/chunks/tsconfig.tmp.tsbuildinfo",
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "emitDeclarationOnly": false
+  },
+  "include": [
+    "**/*.mjs",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.d.ts",
+    "./dist"
+  ]
+}
