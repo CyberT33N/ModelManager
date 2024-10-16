@@ -15,8 +15,11 @@
 
 // ==== DEPENDENCIES ====
 import sinon from 'sinon'
+import _ from 'lodash'
 import { glob } from 'glob'
-import { ValidationError } from 'error-manager-helper'
+import {
+    ValidationError, ResourceNotFoundError
+} from 'error-manager-helper'
 import {
     assert,
     describe, it,
@@ -30,7 +33,7 @@ import ModelUtils, { type IMemoryModel } from '@/src/ModelUtils'
 
 // ==== CODE TO TEST ====
 import FixturesManager, {
-    type IFixtureDoc, type IFixtures, type IFixture, type IFixtureInserted
+    type IFixtureDoc, type IFixtures
 } from '@/src/FixturesManager'
 
 describe('[UNIT TEST] - src/FixtureManager.ts', () => {
@@ -39,12 +42,13 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
 
     let fixtures: IFixtures<IFixtureDoc>
     let fixturesDoc: IFixtureDoc
+    let fixturesDoc2: IFixtureDoc
     let docId: string
+    let docId2: string
 
     let modelDetails: IModel<any>
     let memoryModelDetails: IMemoryModel<any>
 
-    const sampleFixtureId = '000000000000000000000002'
     const dbName = 'test'
     const collectionName = 'test.Test'
 
@@ -53,44 +57,47 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
         memoryModelDetails = globalThis.memoryModelDetails
 
         fixturesDoc = await import('@/test/fixtures/test/test.Test/0_test') as IFixtureDoc
+        fixturesDoc2 = await import('@/test/fixtures/test/test.Test/1_test') as IFixtureDoc
         docId = fixturesDoc.docContents._id.toString()
+        docId2 = fixturesDoc2.docContents._id.toString()
 
         fixtures = {
             [dbName]: {
                 [collectionName]: {
-                    [docId]: fixturesDoc
+                    [docId]: fixturesDoc,
+                    [docId2]: fixturesDoc2
                 }
             }
         }
     })
 
     beforeEach(async() => {
-        // Reset instance before creating a new one
-        Reflect.set(FixturesManager, 'instance', undefined)
-
         initStub = sinon.stub(
             FixturesManager.prototype, 'init' as keyof FixturesManager
         ).resolves()
 
+        // Reset instance before creating a new one
+        Reflect.set(FixturesManager, 'instance', undefined)
         fixturesManager = await FixturesManager.getInstance()
+        fixturesManager.fixtures = _.cloneDeep(fixtures)
     })
 
     afterEach(async() => {
         await fixturesManager.cleanAll()
-        initStub.restore()
+        sinon.restore()
     })
 
     describe('getInstance()', () => {
         it('should create new instance', () => {
             expect(initStub.calledOnce).toBe(true)
             expect(fixturesManager).toBeInstanceOf(FixturesManager)
-            expect(fixturesManager.fixtures).toEqual({})
+            expect(fixturesManager.fixtures).toEqual(fixtures)
         })
 
         it('should return existing instance', async() => {
             const fixturesManager2 = await FixturesManager.getInstance()
             expect(initStub.calledOnce).toBe(true)
-            expect(fixturesManager2.fixtures).toEqual([])
+            expect(fixturesManager2.fixtures).toEqual(fixtures)
             expect(fixturesManager2).toBeInstanceOf(FixturesManager)
         })
     })
@@ -102,7 +109,6 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                 let getInstanceStub: sinon.SinonStub
 
                 beforeEach(() => {
-                    // In order to call init method, we need to restore the stub
                     initStub.restore()
 
                     globFixturesStub = sinon.stub(
@@ -114,31 +120,29 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                     ).resolves()
                 })
 
-                afterEach(() => {
-                    globFixturesStub.restore()
-                    getInstanceStub.restore()
-                })
 
-                it('should initialize modelmanager instance', async() => {
-                    await fixturesManager['init']()
-                    expect(getInstanceStub.calledOnce).toBe(true)
-                })
-            
                 it('should initialize fixtures if not already initialized', async() => {
+                    fixturesManager.fixtures = {}
+
                     await fixturesManager['init']()
 
-                    expect(fixturesManager.fixtures).toEqual({})
+                    // ==== SPIES/STUBS ====
+                    expect(getInstanceStub.calledOnce).toBe(true)
                     expect(
                         globFixturesStub.calledOnceWithExactly(`${process.cwd()}/test/fixtures/**/*.ts`)
                     ).toBe(true)
+
+                    // ==== EXPECTATIONS ====
+                    expect(fixturesManager.fixtures).toEqual({})
                 })
 
                 it('should not initialize fixtures if already initialized', async() => {
-                    fixturesManager.fixtures = fixtures
-
                     await fixturesManager['init']()
                     
+                    // ==== SPIES/STUBS ====
                     expect(globFixturesStub.called).toBe(false)
+
+                    // ==== EXPECTATIONS ====
                     expect(fixturesManager.fixtures).toEqual(fixtures)
                 })
             })
@@ -162,9 +166,7 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                             assert.fail('This line should not be reached')
                         } catch (err) {
                             if (err instanceof ValidationError) {
-                                const typedErr = err
-                
-                                expect(typedErr.message).toBe(
+                                expect(err.message).toBe(
                                     `[Model Manager] - Duplicated fixture id: ${docId}`
                                 )
                             
@@ -182,10 +184,6 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
 
                     beforeEach(() => {
                         globSpy = sinon.spy(glob, 'sync')
-                    })
-
-                    afterEach(() => {
-                        globSpy.restore()
                     })
 
                     it('should glob and load fixtures from the file system', async() => {
@@ -212,15 +210,68 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
         describe('[PUBLIC]', () => {
             describe('insert()', () => {
                 describe('[ERROR]', () => {
+                    it('should throw an error if the fixture is already inserted', async() => {
+                        const expectedDoc = {
+                            name: fixturesDoc.name,
+                            docContents: fixturesDoc.docContents,
+                            Model: memoryModelDetails.Model
+                        } 
+
+                        // Insert the fixture first
+                        fixturesManager.fixtures[dbName][collectionName][docId] = expectedDoc
+
+                        try {
+                            await fixturesManager.insert([docId])
+                            assert.fail('This line should not be reached')
+                        } catch (err) {
+                            if (err instanceof ValidationError) {
+                                expect(err.message).toBe(
+                                    `[Model Manager] - Fixture already inserted: ${docId}`
+                                )
+                                expect(err.data).toEqual({
+                                    fixture: expectedDoc,
+                                    id: docId,
+                                    dbName, collectionName
+                                })
+
+                                return
+                            }
+
+                            assert.fail('This line should not be reached')
+                        }
+                    })
+
+                    it('should throw an error if the fixture id is not found', async() => {
+                        const sampleFixtureId = 'notFound'
+
+                        try {
+                            await fixturesManager.insert([sampleFixtureId])
+                            assert.fail('This line should not be reached')
+                        } catch (err) {
+                            if (err instanceof ResourceNotFoundError) {
+                                expect(err.message).toBe(
+                                    '[Model Manager] - No fixtures inserted.'
+                                )
+                                expect(err.data).toEqual({
+                                    ids: [sampleFixtureId]
+                                })
+
+                                return
+                            }
+
+                            assert.fail('This line should not be reached')
+                        }
+                    })
                 })
+
                 describe('[SUCCESS]', () => {
                     let getModelStub: sinon.SinonStub
+
                     let createMemoryModelStub: sinon.SinonStub
                     let modelCreateStub: sinon.SinonStub
 
                     let expectedDoc: Record<string, any>
 
-                    let modelFindOneStub: sinon.SinonStub
                     let findOneStub: sinon.SinonStub
                     let leanStub: sinon.SinonStub
                     let toObjectStub: sinon.SinonStub
@@ -229,8 +280,6 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                     const expectedToObjectDoc = { toObject: true }
 
                     beforeEach(() => {
-                        fixturesManager.fixtures = fixtures
-
                         getModelStub = sinon.stub()
                         fixturesManager['modelManager'] = {
                             getModel: getModelStub.returns(modelDetails)
@@ -261,17 +310,6 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                         }
 
                         findOneStub.withArgs({ _id: docId }).onSecondCall().resolves(expectedDoc)
-                    })
-
-                    afterEach(() => {
-                        getModelStub.restore()
-                        createMemoryModelStub.restore()
-                        modelCreateStub.restore()
-
-                        modelFindOneStub.restore()
-                        findOneStub.restore()
-                        leanStub.restore()
-                        toObjectStub.restore()
                     })
 
                     it('should insert documents into the specified collections', async() => {
@@ -305,68 +343,93 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                 })
             })
 
-            describe('clean()', () => {
+            describe('getFixture()', () => {
+                describe('[ERROR]', () => {
+                    it('should throw an error if the fixture is not found', () => {
+                        const sampleFixtureId = 'notFound'
+
+                        try {
+                            fixturesManager.getFixture(sampleFixtureId)
+                            assert.fail('This line should not be reached')
+                        } catch (err) {
+                            if (err instanceof ResourceNotFoundError) {
+                                expect(err.message).toBe(
+                                    `[Model Manager] - Fixture not found: ${sampleFixtureId}`
+                                )
+                                expect(err.data).toEqual({
+                                    id: sampleFixtureId
+                                })
+
+                                return
+                            }
+
+                            assert.fail('This line should not be reached')
+                        }
+                    })
+                })
+
+                describe('[SUCCESS]', () => {
+                    it('should return the fixture object', () => {
+                        const fixture = fixturesManager.getFixture(docId)
+                        expect(fixture).toEqual(fixturesDoc)
+                    })
+                })
+            })
+
+            describe('[CLEANING]', () => {
                 let mongoServerStub: sinon.SinonStub
+                let promiseAllSpy: sinon.SinonSpy
 
                 beforeEach(() => {
-                    fixturesManager.fixtures = fixtures
+                    promiseAllSpy = sinon.spy(Promise, 'all')
 
                     mongoServerStub = sinon.stub()
-                    Reflect.set(fixturesManager.getFixture(docId)!, 'mongoServer', {
+
+                    Reflect.set(fixturesManager.fixtures[dbName][collectionName][docId], 'mongoServer', {
+                        stop: mongoServerStub
+                    })
+
+                    Reflect.set(fixturesManager.fixtures[dbName][collectionName][docId2], 'mongoServer', {
                         stop: mongoServerStub
                     })
                 })
 
-                it('should clean up the fixtures', async() => {
-                    expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(fixturesDoc)
-                    await fixturesManager.clean([docId])
-                    expect(fixturesManager.fixtures[dbName][collectionName]).toEqual({undefined})
-                    expect(mongoServerStub.calledOnce).toBe(true)
-                })
-            })
+                describe('clean()', () => {
+                    it('should clean up specific fixture', async() => {
+                        // Check if the fixture is there
+                        expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(fixturesDoc)
+                        expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
 
-            describe('cleanAll()', () => {
-                let mongoServerSpy: sinon.SinonSpy
+                        await fixturesManager.clean([docId])
 
-                beforeEach(async() => {
-                    // Create some fixtures
-                    await fixturesManager.insert([sampleFixtureId])
- 
-                    const { mongoServer } = fixturesManager.getFixture(sampleFixtureId)!
- 
-                    mongoServerSpy = sinon.spy(mongoServer, 'stop')
-                })
+                        // ==== EXPECTATIONS ====
+                        // Check if the specified fixture is removed
+                        expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(undefined)
+                        // Check if second fixture is still there
+                        expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
 
-                it('should clean up all the fixtures', async() => {
-                    const docId = docId
-
-                    expect(
-                        (fixturesManager as any).fixtures['test']['test.Test'][docId].doc._id.toString()
-                    ).toBe(docId)
-
-                    await fixturesManager.cleanAll()
-
-                    expect(mongoServerSpy.calledOnce).to.be.true
-                    expect((fixturesManager as any).fixtures).toEqual({})
-                })
-            })
-
-            describe('getFixture()', () => {
-                beforeEach(async() => {
-                    await fixturesManager.insert([sampleFixtureId])
-                })
-                
-                it('should return the fixture object', async() => {
-                    const fixture = fixturesManager.getFixture(docId)
-
-                    expect(fixture?.doc._id.toString()).toBe(docId)
-                    expect(fixture?.Model).to.exist
-                    expect(fixture?.mongoServer).to.exist
+                        // ==== SPIES/STUBS ====
+                        expect(mongoServerStub.calledOnce).toBe(true)
+                        expect(promiseAllSpy.calledOnce).toBe(true)
+                    })
                 })
 
-                it('should return null because fixture not found', async() => {
-                    const fixture = fixturesManager.getFixture('notFound')
-                    expect(fixture).toBe(null)
+                describe('cleanAll()', () => {
+                    it('should clean up all the fixtures and restore this.fixturees', async() => {
+                        // Check if the fixture is there
+                        expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(fixturesDoc)
+                        expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
+
+                        await fixturesManager.cleanAll()
+  
+                        // ==== EXPECTATIONS ====
+                        // Check if the specified fixture is removed
+                        expect(fixturesManager.fixtures).toEqual({})
+
+                        // ==== SPIES/STUBS ====
+                        expect(mongoServerStub.calledTwice).toBe(true)
+                        expect(promiseAllSpy.calledOnce).toBe(true)
+                    })
                 })
             })
         })

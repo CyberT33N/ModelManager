@@ -153,9 +153,7 @@ describe('[UNIT TEST] - src/ModelManager.ts', () => {
                         assert.fail('This line should not be reached')
                     } catch (err) {
                         if (err instanceof ValidationError) {
-                            const typedErr = err
-            
-                            expect(typedErr.message).toBe(
+                            expect(err.message).toBe(
                                 `A model with the name '${modelDetails.modelName}' already exists.`
                             )
                         

@@ -195,57 +195,80 @@ class FixturesManager {
                 for (const [collectionName, fixtures] of Object.entries(collections)) {
                     const fixture = fixtures[id]
 
-                    // If fixture already inserted throw error
-                    if ('Model' in fixture) {
-                        throw new ValidationError(`[Model Manager] - Fixture already inserted: ${id}`, {
-                            fixture, id, dbName, collectionName
-                        })
-                    }
-
-                    if ('docContents' in fixture) {
-                        // Retrieve Mongoose model for the collection
-                        const { schema } = this.modelManager.getModel(collectionName)
-                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-
-                        // Create the in-memory model and insert the fixture
-                        const { Model, mongoServer } = await ModelUtils.createMemoryModel<TMongooseSchema>({
-                            dbName, modelName: collectionName, schema
-                        })
-
-                        // Insert the fixture document data
-                        await Model.create<TMongooseSchema>(fixture.docContents)
-
-                        // Fetch the document in lean and full forms
-                        const docLean = await Model.findOne({ _id: id }).lean()
-                        const doc = await Model.findOne({ _id: id })
-
-                        // Store the processed fixture object
-                        const fixtureObject: IFixture = {
-                            name: fixture.name,
-                            docContents: fixture.docContents,
-                            doc,
-                            docLean,
-                            docToObject: doc?.toObject(),
-                            Model,
-                            mongoServer
+                    if (fixture) {
+                        if ('Model' in fixture) {
+                            throw new ValidationError(`[Model Manager] - Fixture already inserted: ${id}`, {
+                                fixture, id, dbName, collectionName
+                            })
                         }
 
-                        this.fixtures[dbName][collectionName][id] = fixtureObject
-                        result[id] = fixtureObject
-                    } else {
-                        throw new ResourceNotFoundError(`[Model Manager] - Fixture not found: ${id}`, {
-                            id, dbName, collectionName
-                        })
+                        if ('docContents' in fixture) {
+                            // Retrieve Mongoose model for the collection
+                            const { schema } = this.modelManager.getModel(collectionName)
+                            type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
+
+                            // Create the in-memory model and insert the fixture
+                            const { Model, mongoServer } = await ModelUtils.createMemoryModel<TMongooseSchema>({
+                                dbName, modelName: collectionName, schema
+                            })
+
+                            // Insert the fixture document data
+                            await Model.create<TMongooseSchema>(fixture.docContents)
+
+                            // Fetch the document in lean and full forms
+                            const docLean = await Model.findOne({ _id: id }).lean()
+                            const doc = await Model.findOne({ _id: id })
+
+                            // Store the processed fixture object
+                            const fixtureObject: IFixture = {
+                                name: fixture.name,
+                                docContents: fixture.docContents,
+                                doc,
+                                docLean,
+                                docToObject: doc?.toObject(),
+                                Model,
+                                mongoServer
+                            }
+
+                            this.fixtures[dbName][collectionName][id] = fixtureObject
+                            result[id] = fixtureObject
+                        }
                     }
                 }
             }
         }))
 
+        if (_.isEmpty(result)) {
+            throw new ResourceNotFoundError('[Model Manager] - No fixtures inserted.', { ids })
+        }
+
         return result
     }
 
     /**
-     * Cleans up fixtures and stops associated MongoMemoryServer instances.
+     * Retrieves the fixture object based on the given ID.
+     * @param {string} id - The ID of the fixture to retrieve.
+     * @returns {IFixtureDoc | IFixtureInserted} The fixture object.
+     * @throws {ResourceNotFoundError} If the fixture ID is not found.
+     */
+    public getFixture(id: string): IFixtureDoc | IFixtureInserted {
+        for (const dbName in this.fixtures) {
+            for (const collectionName in this.fixtures[dbName]) {
+                const fixture = this.fixtures[dbName][collectionName][id]
+
+                if (fixture) {
+                    return fixture
+                }
+            }
+        }
+
+        throw new ResourceNotFoundError(`[Model Manager] - Fixture not found: ${id}`, {
+            id
+        })
+    }
+
+    /**
+     * Cleans up specific fixtures and stops associated MongoMemoryServer instances.
      * @async
      * @param {string[]} ids - Array of fixture IDs to clean up.
      * @returns {Promise<void>} Resolves when cleanup is complete.
@@ -256,12 +279,14 @@ class FixturesManager {
                 for (const collectionName in this.fixtures[dbName]) {
                     const fixture = this.fixtures[dbName][collectionName][id]
 
-                    if ('mongoServer' in fixture) {
-                        // Stop the specific memory server for this fixture
-                        await fixture.mongoServer.stop()
-                    }
+                    if (fixture) {
+                        if ('mongoServer' in fixture) {
+                            // Stop the specific memory server for this fixture
+                            await fixture.mongoServer.stop()
+                        }
 
-                    delete this.fixtures[dbName][collectionName][id]
+                        delete this.fixtures[dbName][collectionName][id]
+                    }
                 }
             }
         }))
@@ -287,25 +312,6 @@ class FixturesManager {
 
         await Promise.all(stops)
         this.fixtures = {}
-    }
-
-    /**
-     * Retrieves a specific fixture by its ID.
-     * @param {string} id - The ID of the fixture to retrieve.
-     * @returns {IFixtureDoc | IFixtureInserted | null} The fixture if found, otherwise null.
-     */
-    public getFixture(id: string): IFixtureDoc | IFixtureInserted | null {
-        for (const dbName in this.fixtures) {
-            for (const collectionName in this.fixtures[dbName]) {
-                const fixture = this.fixtures[dbName][collectionName][id]
-
-                if (fixture) {
-                    return fixture
-                }
-            }
-        }
-
-        return null
     }
 }
 
