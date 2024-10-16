@@ -49,10 +49,6 @@ describe('[UNIT TEST] - src/ModelManager.ts', () => {
         modelManager = await ModelManager.getInstance()
     })
 
-    afterEach(() => {
-        initStub.restore()
-    })
-
     describe('getInstance()', () => {
         it('should create new instance', () => {
             expect(initStub.calledOnce).toBe(true)
@@ -82,10 +78,6 @@ describe('[UNIT TEST] - src/ModelManager.ts', () => {
                     ).resolves([])
                 })
 
-                afterEach(() => {
-                    globModelsStub.restore()
-                })
-            
                 it('should initialize models if not already initialized', async() => {
                     await modelManager['init']()
 
@@ -113,10 +105,6 @@ describe('[UNIT TEST] - src/ModelManager.ts', () => {
                         .resolves(modelDetails.Model)
                 })
 
-                afterEach(() => {
-                    createModelStub.restore()
-                })
-            
                 it('should return an array of globbed models', async() => {
                     const { modelName, dbName, schema } = modelDetails
                     const expression = `${process.cwd()}/test/models/**/*.model.mjs`
@@ -220,11 +208,6 @@ describe('[UNIT TEST] - src/ModelManager.ts', () => {
                     } as unknown as MongooseUtils)
                     
                     modelCreateIndexesStub = sinon.stub(modelDetails.Model, 'createIndexes').resolves()
-                })
-            
-                afterEach(() => {
-                    mongooseUtilsGetInstanceStub.restore()
-                    modelCreateIndexesStub.restore()
                 })
             
                 it('should create a new mongoose model and call createIndexes()', async() => {

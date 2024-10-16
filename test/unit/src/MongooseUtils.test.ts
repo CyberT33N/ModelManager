@@ -99,10 +99,6 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                     schemaSpy = sinon.spy(mongoose, 'Schema')
                 })
        
-                afterEach(() => {
-                    schemaSpy.restore()
-                })
-
                 it('should create a mongoose schema', () => {
                     const { modelName, schema } = modelDetails
 
@@ -129,10 +125,6 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                     ).resolves()
                 })
 
-                afterEach(() => {
-                    updateConnectionStringStub.restore()
-                })
-
                 describe('[ERROR]', () => {
                     let createConnectionStub: sinon.SinonStub
 
@@ -144,10 +136,6 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                         createConnectionStub = sinon.stub(mongoose, 'createConnection').returns({
                             asPromise: () => Promise.reject(error)
                         } as unknown as mongoose.Connection)
-                    })
-
-                    afterEach(() => {
-                        createConnectionStub.restore()
                     })
 
                     it('should throw an error when initializing connection with mongoose fails', async() => {
@@ -178,10 +166,6 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                     beforeEach(() => {
                         createConnectionSpy = sinon.spy(mongoose, 'createConnection')
                         mongooseUtils['connectionString'] = memoryModelDetails.mongoUri
-                    })
-
-                    afterEach(() => {
-                        createConnectionSpy.restore()
                     })
 
                     it('should initialize connection with mongoose', async() => {
@@ -244,10 +228,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                     ).resolves()
                 })
 
-                afterEach(() => {
-                    initStub.restore()
-                })
-       
+    
                 describe('[NEW CONNECTION]', () => {
                     it('should call init method because conn is null', async() => {
                         const conn = await mongooseUtils.getConnection()
@@ -282,11 +263,6 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                     ).resolves(memoryModelDetails.conn)
                 })
       
-                afterEach(() => {
-                    createSchemaStub.restore()
-                    getConnectionStub.restore()
-                })
-
                 describe('[ERROR]', () => {
                     it('should validate schema and should not allow to create doc', async() => {
                         const { modelName, schema } = modelDetails

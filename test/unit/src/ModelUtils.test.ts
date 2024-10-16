@@ -54,12 +54,6 @@ describe('[UNIT TEST] - src/ModelUtils.ts', () => {
                         .returns(mongooseSchema as mongoose.Schema<unknown>)
                 })
 
-                afterEach(() => {
-                    mongooseUtilsCreateSchemaStub.restore()
-                    mongoMemoryServerSpy.restore()
-                    mongooseConnectSpy.restore()
-                })
-
                 describe('[ERROR]', () => {
                     it('should validate schema and should not allow to create doc', async() => { 
                         // Generate the Mongoose schema type

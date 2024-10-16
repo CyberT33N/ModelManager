@@ -84,7 +84,6 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
 
     afterEach(async() => {
         await fixturesManager.cleanAll()
-        sinon.restore()
     })
 
     describe('getInstance()', () => {

@@ -14,8 +14,9 @@
 */
 
 // ==== DEPENDENCIES ====
-import { beforeAll, afterAll } from 'vitest'
+import sinon from 'sinon'
 import mongoose from 'mongoose'
+import { beforeAll, afterAll, afterEach } from 'vitest'
 
 // ==== INTERNAL ====
 import type { IModel, IModelCore } from '@/src/ModelManager'
@@ -66,4 +67,8 @@ beforeAll(async() => {
 afterAll(async() => {
     // Calling stop() will only close the specifc connection and not all created memory-db connections
     await globalThis.memoryModelDetails.mongoServer.stop()
+})
+
+afterEach(() => {
+    sinon.restore()
 })

@@ -49,10 +49,6 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
         modelManager = await ModelManager.getInstance()
     })
 
-    afterEach(() => {
-        initStub.restore()
-    })
-
     describe('[INTERFACES]', () => {
         interface IModelCore_Test {
             /** The name of the model. */
