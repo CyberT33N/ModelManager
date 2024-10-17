@@ -19,7 +19,7 @@ import mongoose from 'mongoose'
 import {
     describe, it,
     expectTypeOf,
-    beforeEach, afterEach, beforeAll
+    beforeEach, beforeAll
 } from 'vitest'
 
 // ==== CODE TO TEST ====
@@ -29,7 +29,6 @@ import ModelManager, {
 
 describe('[TYPE TEST] - src/ModelManager.ts', () => {
     let modelManager: ModelManager
-    let initStub: sinon.SinonStub
     // Must be set because we only use it as type here
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let modelDetails: IModel<any>
@@ -42,7 +41,7 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
         // Reset instance before creating a new one
         Reflect.set(ModelManager, 'instance', undefined)
 
-        initStub = sinon.stub(
+        sinon.stub(
             modelManager, 'init' as keyof ModelManager
         ).resolves()
 

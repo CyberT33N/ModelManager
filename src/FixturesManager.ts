@@ -1,3 +1,18 @@
+/*
+███████████████████████████████████████████████████████████████████████████████
+██******************** PRESENTED BY t33n Software ***************************██
+██                                                                           ██
+██                  ████████╗██████╗ ██████╗ ███╗   ██╗                      ██
+██                  ╚══██╔══╝╚════██╗╚════██╗████╗  ██║                      ██
+██                     ██║    █████╔╝ █████╔╝██╔██╗ ██║                      ██
+██                     ██║    ╚═══██╗ ╚═══██╗██║╚██╗██║                      ██
+██                     ██║   ██████╔╝██████╔╝██║ ╚████║                      ██
+██                     ╚═╝   ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝                      ██
+██                                                                           ██
+███████████████████████████████████████████████████████████████████████████████
+███████████████████████████████████████████████████████████████████████████████
+*/
+
 // ==== DEPENDENCIES ====
 import _ from 'lodash'
 import path from 'path'
@@ -171,7 +186,9 @@ class FixturesManager {
      * @throws {ValidationError} If the fixture has already been inserted.
      * @throws {ResourceNotFoundError} If the fixture ID is not found.
      */
-    public async insert(ids: string[]): Promise<{ [id: string]: IFixture }> {
+    public async insert(
+        ids: string[]
+    ): Promise<{ [id: string]: IFixture }> {
         const result: { [id: string]: IFixture } = {}
 
         await Promise.all(ids.map(async id => {
@@ -239,6 +256,7 @@ class FixturesManager {
         for (const dbName in this.fixtures) {
             for (const collectionName in this.fixtures[dbName]) {
                 const fixture = this.fixtures[dbName][collectionName][id]
+
                 if (fixture) {
                     return fixture
                 }

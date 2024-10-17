@@ -19,7 +19,7 @@ import mongoose from 'mongoose'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import {
     describe, it, expect, assert,
-    beforeEach, afterEach, beforeAll
+    beforeEach, beforeAll
 } from 'vitest'
 
 // ==== INTERNAL ====
