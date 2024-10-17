@@ -174,11 +174,19 @@ export default class ModelManager {
     }
 
     /**
-     * 🏗️ Creates a new Mongoose model.
-     * @public
-     * @template TMongooseSchema - The schema type.
-     * @param {IModelCore} modelDetails - Object containing model details.
-     * @returns {Promise<mongoose.Model<TMongooseSchema>>} The created Mongoose model.
+      * 🏗️ Creates a new Mongoose model.
+      * @public
+      * @template TMongooseSchema - The schema type.
+      * @param {IModelCore} modelDetails - Object containing details for creating the model.
+      * @param {string} modelDetails.modelName - The name of the model being created. 
+      *    This will be used as the identifier within the application and MongoDB collection.
+      * @param {mongoose.Schema<TMongooseSchema>} modelDetails.schema - The Mongoose schema defining the structure
+      *    and validation rules for the model. It dictates how documents in the collection will be structured.
+      * @param {string} modelDetails.dbName - The name of the database where the model will be stored.
+      *    This is essential for multi-tenant applications or cases where multiple databases are managed.
+      * 
+      * @returns {Promise<mongoose.Model<TMongooseSchema>>} The created Mongoose model.
+      * 
      */
     public async createModel<TMongooseSchema>({
         modelName,

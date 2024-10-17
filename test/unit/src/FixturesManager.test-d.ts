@@ -20,7 +20,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server'
 import {
     describe, it,
     expect, expectTypeOf,
-    beforeEach, beforeAll
+    beforeEach
 } from 'vitest'
 
 // ==== INTERNAL ====

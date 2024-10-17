@@ -283,7 +283,7 @@ class FixturesManager {
 
                     if (fixture) {
                         if ('mongoServer' in fixture) {
-                        // ⏹️ Stop the specific memory server for this fixture
+                            // ⏹️ Stop the specific memory server for this fixture
                             await fixture.mongoServer.stop()
                         }
 
@@ -300,7 +300,6 @@ class FixturesManager {
      * associated MongoMemoryServer instances and clearing the fixtures from memory.
      * 
      * @async
-     * @throws {Error} Throws an error if there is an issue stopping any of the memory servers.
      * @returns {Promise<void>} Resolves when cleanup is complete.
      */
     public async cleanAll(): Promise<void> {
