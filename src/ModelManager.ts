@@ -1,151 +1,128 @@
-/*
-███████████████████████████████████████████████████████████████████████████████
-██******************** PRESENTED BY t33n Software ***************************██
-██                                                                           ██
-██                  ████████╗██████╗ ██████╗ ███╗   ██╗                      ██
-██                  ╚══██╔══╝╚════██╗╚════██╗████╗  ██║                      ██
-██                     ██║    █████╔╝ █████╔╝██╔██╗ ██║                      ██
-██                     ██║    ╚═══██╗ ╚═══██╗██║╚██╗██║                      ██
-██                     ██║   ██████╔╝██████╔╝██║ ╚████║                      ██
-██                     ╚═╝   ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝                      ██
-██                                                                           ██
-███████████████████████████████████████████████████████████████████████████████
-*/
-
-// ==== DEPENDENCIES ====
+// 🔗 ==== DEPENDENCIES ====
 import _ from 'lodash'
 import { glob } from 'glob'
 import mongoose from 'mongoose'
 import { ValidationError, ResourceNotFoundError } from 'error-manager-helper'
 
-// ==== INTERNAL DEPENDENCIES ====
+// 🔗 ==== INTERNAL DEPENDENCIES ====
 import MongooseUtils from './MongooseUtils'
 
 /**
- * Interface representing the details of a Mongoose model.
- * @template TSchema - The type of the document.
+ * 💻 Interface representing the core details of a Mongoose model.
  */
 export interface IModelCore {
-    /** The name of the model. */
+    /** 📛 The name of the model. */
     modelName: string
-    /** The name of the database where the model is stored. */
+    /** 🏢 The name of the database where the model resides. */
     dbName: string
-    /** The schema used for the model. */
+    /** 📜 The schema used for the model. */
     schema: mongoose.SchemaDefinition
 }
 
 /**
- * Interface representing a Mongoose model along with additional metadata.
- * @template TSchema - The type of the document.
+ * 💻 Interface representing a Mongoose model along with additional metadata.
+ * @template TSchema - The type of the document (schema definition).
  */
 export interface IModel<TSchema> extends IModelCore {
-    /** The Mongoose Model instance. */
+    /** 💾 The Mongoose Model instance. */
     Model: mongoose.Model<TSchema>
 }
 
 /**
- * A manager class for all Mongoose models in the application.
- * Manages the dynamic loading and initialization of Mongoose models.
+ * 🛠️ Singleton class for managing all Mongoose models in the application.
+ * Handles the dynamic loading and initialization of models.
  */
 export default class ModelManager {
+    // 🔒 Static instance for Singleton pattern
     // eslint-disable-next-line no-use-before-define
     private static instance: ModelManager
 
-    /** A list of all loaded models. */
+    /** 📋 Array storing all loaded Mongoose models. */
     public models: IModel<any>[] = []
 
     /**
-     * Private constructor to prevent direct instantiation.
-     * Access is provided via the `getInstance` method.
+     * 🔒 Private constructor to enforce singleton pattern.
+     * Use `getInstance` to access the ModelManager.
      */
     private constructor() {}
 
     /**
-     * Returns the singleton instance of the ModelManager.
-     * Initializes the instance upon the first call.
+     * 🚀 Retrieves the singleton instance of the ModelManager.
+     * Initializes the instance on the first call.
      * @static
-     * @returns {Promise<ModelManager>} - The singleton instance of the ModelManager.
+     * @returns {Promise<ModelManager>} The singleton instance.
      */
     public static async getInstance(): Promise<ModelManager> {
         if (!this.instance) {
             this.instance = new ModelManager()
             await this.instance.init()
         }
-        
+
         return this.instance
     }
 
     /**
-     * Initializes the ModelManager by loading all models.
+     * ⚙️ Initializes the ModelManager by loading all models dynamically.
      * @private
-     * @returns {Promise<void>} - A promise that resolves when the initialization is complete.
+     * @returns {Promise<void>} Resolves when all models are loaded.
      */
     private async init(): Promise<void> {
+        // 🛑 Check if models are already loaded
         if (_.isEmpty(this.models)) {
             const expression = `${process.cwd()}/**/*.model.mjs`
-            this.models = await this. globModels(expression)
+            this.models = await this.globModels(expression)
         }
     }
 
     /**
-     * Globs through files to dynamically import Mongoose models and creates typed models.
+     * 🔍 Finds model files using a glob pattern and dynamically imports them.
      * @private
-     * @param {string} expression - The glob pattern used to find model files.
-     * @returns {Promise< IModel<any>[] >} - A promise that
-     * resolves to an array of typed Mongoose models.
+     * @param {string} expression - Glob pattern to find model files.
+     * @returns {Promise<IModel<any>[]>} Resolves to an array of loaded models.
      */
-    private async globModels(
-        expression: string
-    ): Promise< IModel<any>[] > {
+    private async globModels(expression: string): Promise<IModel<any>[]> {
         const modelPaths = await glob(expression)
         const modelDetails: IModel<any>[] = []
 
         for (const path of modelPaths) {
-            // Ignore Webpack bundling during dynamic import
             console.log('[ModelManager] - Importing Model:', path)
+
+            // 🛑 webpackIgnore prevents bundling issues during dynamic import
             const modelCoreDetail = await import(/* webpackIgnore: true */ path) as IModelCore
             const { modelName, dbName, schema } = modelCoreDetail
 
-            // Generate the Mongoose schema type
+            // 🏗️ Generate Mongoose schema type
             type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
 
-            const Model = await this.createModel<TMongooseSchema>({
-                modelName,
-                schema,
-                dbName
-            })
-            
-            console.log('[ModelManager] - Globbing Model:', modelName)
+            const Model = await this.createModel<TMongooseSchema>({ modelName, schema, dbName })
+            console.log('[ModelManager] - Loaded Model:', modelName)
 
-            const modelDetail: IModel<TMongooseSchema> = {
+            modelDetails.push({
                 modelName,
                 Model,
                 dbName,
                 schema
-            }
-
-            modelDetails.push(modelDetail)
+            })
         }
 
         return modelDetails
     }
 
     /**
-     * Adds a new Mongoose model to the instance model collection.
+     * ➕ Adds a new Mongoose model to the collection.
+     * Throws an error if the model name already exists.
      * @private
-     * @template TMongooseSchema - The schema type of the Mongoose model.
-     * @param {IModel<TMongooseSchema>} modelDetails - The details of the model to add.
-     * @throws {ValidationError} If a model with the same name already exists.
-     * @returns {void} This method does not return a value.
+     * @template TMongooseSchema - The schema type.
+     * @param {IModel<TMongooseSchema>} modelDetails - Details of the model.
+     * @throws {ValidationError} If the model already exists.
      */
-    private pushModel<TMongooseSchema>(
-        modelDetails: IModel<TMongooseSchema>
-    ): void {
+    private pushModel<TMongooseSchema>(modelDetails: IModel<TMongooseSchema>): void {
+        // 🛑 Check for existing model
         const existingModel = this.models.find(model => model.modelName === modelDetails.modelName)
 
         if (existingModel) {
             throw new ValidationError(
-                `A model with the name '${modelDetails.modelName}' already exists.`,
+                `Model '${modelDetails.modelName}' already exists.`,
                 { modelDetails, existingModel }
             )
         }
@@ -154,57 +131,57 @@ export default class ModelManager {
     }
 
     /**
-     * Returns all loaded Mongoose models.
-     * @returns {IModel<any>[]} - A list of all loaded Mongoose models.
+     * 🧾 Returns all loaded Mongoose models.
+     * @public
+     * @returns {IModel<any>[]} Array of loaded models.
      */
     public getModels(): IModel<any>[] {
         return this.models
     }
 
     /**
-     * Returns a specific Mongoose model based on its name.
-     * @param {string} name - The name of the model.
-     * @returns The Mongoose model or `undefined` if not found.
+     * 🔍 Retrieves a Mongoose model by its name.
+     * Throws an error if the model is not found.
+     * @public
+     * @param {string} name - The model name.
+     * @returns {IModel<any>} The Mongoose model or throws an error.
+     * @throws {ResourceNotFoundError} If the model is not found.
      */
     public getModel(name: string): IModel<any> {
+        // 🛑 Search for model by name
         const modelDetails = this.models.find(model => model.modelName === name)
 
         if (!modelDetails) {
-            throw new ResourceNotFoundError(
-                `[Model Manager] - Model '${name}' not found.`,
-                { name }
-            )
+            throw new ResourceNotFoundError(`[Model Manager] - Model '${name}' not found.`, { name })
         }
 
         return modelDetails
     }
 
     /**
-     * Creates a Mongoose model based on the given name, schema, and database name.
-     * @template TMongooseSchema - The type of the mongoose schema.
-     * @param {IModelCore} modelDetails - An object containing the model's details.
-     * @returns {Promise<mongoose.Model<TMongooseSchema>>} A promise that resolves
-     * to the created Mongoose Model instance.
+     * 🏗️ Creates a new Mongoose model.
+     * @public
+     * @template TMongooseSchema - The schema type.
+     * @param {IModelCore} modelDetails - Object containing model details.
+     * @returns {Promise<mongoose.Model<TMongooseSchema>>} The created Mongoose model.
      */
     public async createModel<TMongooseSchema>({
         modelName,
         schema,
         dbName
-    }: IModelCore ): Promise<mongoose.Model<TMongooseSchema>> {
+    }: IModelCore): Promise<mongoose.Model<TMongooseSchema>> {
         const mongooseUtils = MongooseUtils.getInstance(dbName)
         const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
-        
-        // Ensure indexes are created for the model
+
+        // 🧩 Ensure indexes are created for the model
         await Model.createIndexes()
 
-        const modelDetails: IModel<TMongooseSchema> = {
+        this.models.push({
             modelName,
             Model,
             dbName,
             schema
-        }
-
-        this.models.push(modelDetails)
+        })
         return Model
     }
 }

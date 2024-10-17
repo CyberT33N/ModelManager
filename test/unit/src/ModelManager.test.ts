@@ -142,9 +142,9 @@ describe('[UNIT TEST] - src/ModelManager.ts', () => {
                     } catch (err) {
                         if (err instanceof ValidationError) {
                             expect(err.message).toBe(
-                                `A model with the name '${modelDetails.modelName}' already exists.`
+                                `Model '${modelDetails.modelName}' already exists.`
                             )
-                        
+                            
                             return
                         }
             

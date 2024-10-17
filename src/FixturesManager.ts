@@ -1,18 +1,3 @@
-/*
-███████████████████████████████████████████████████████████████████████████████
-██******************** PRESENTED BY t33n Software ***************************██
-██                                                                           ██
-██                  ████████╗██████╗ ██████╗ ███╗   ██╗                      ██
-██                  ╚══██╔══╝╚════██╗╚════██╗████╗  ██║                      ██
-██                     ██║    █████╔╝ █████╔╝██╔██╗ ██║                      ██
-██                     ██║    ╚═══██╗ ╚═══██╗██║╚██╗██║                      ██
-██                     ██║   ██████╔╝██████╔╝██║ ╚████║                      ██
-██                     ╚═╝   ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝                      ██
-██                                                                           ██
-███████████████████████████████████████████████████████████████████████████████
-███████████████████████████████████████████████████████████████████████████████
-*/
-
 // ==== DEPENDENCIES ====
 import _ from 'lodash'
 import path from 'path'
@@ -26,8 +11,8 @@ import ModelUtils from './ModelUtils'
 import ModelManager from './ModelManager'
 
 /**
- * Represents a fixture document with a name and document contents.
- * @interface
+ * 📝 Represents a fixture document with a name and document contents.
+ * @interface IFixtureDoc
  * @property {string} name - The name identifying the fixture.
  * @property {Object} docContents - The contents of the fixture document.
  * @property {mongoose.Types.ObjectId} docContents._id - Unique Mongoose ObjectId for the document.
@@ -44,9 +29,9 @@ export interface IFixtureDoc {
 }
 
 /**
- * Represents an inserted fixture containing both the original document
+ * 📦 Represents an inserted fixture containing both the original document
  * and its lean (plain object) version, along with the Mongoose model reference.
- * @interface
+ * @interface IFixtureInserted
  * @property {(mongoose.Document<unknown> & Required<{ _id: unknown }>) | null} doc - 
  *    The inserted Mongoose document instance, or null if not available.
  * @property {(mongoose.FlattenMaps<unknown> & Required<{ _id: unknown }>) | null} docLean - 
@@ -65,20 +50,20 @@ export interface IFixtureInserted {
 }
 
 /**
- * Combines both the original fixture document and the inserted fixture information.
+ * 🔗 Combines both the original fixture document and the inserted fixture information.
  * @typedef {IFixtureDoc & IFixtureInserted} IFixture
  */
 export type IFixture = IFixtureDoc & IFixtureInserted
 
 /**
- * Represents the entire structure of test fixtures loaded from files.
+ * 🏗️ Represents the entire structure of test fixtures loaded from files.
  * The structure is nested as: database name -> collection name -> fixture ID.
  * 
  * Once fixtures are inserted, they are extended with `IFixtureInserted` data.
  * @template T - Type of the fixture, either a document or an inserted object.
- * @interface
+ * @interface IFixtures
  * @property {Record<string, Record<string, Record<string, T>>>} fixtures - 
- *    The fixture hierarchy indexed by database name, collection name, and fixture ID.
+ *    The fixture hierarchy indexed by database name -> collection name -> fixture ID.
  */
 export interface IFixtures<T> {
     [dbName: string]: {
@@ -89,9 +74,9 @@ export interface IFixtures<T> {
 }
 
 /**
- * Manages test fixtures for MongoDB memory server and Mongoose models.
+ * 🛠️ Manages test fixtures for MongoDB memory server and Mongoose models.
  * Implements the Singleton pattern to ensure a single instance.
- * @class
+ * @class FixturesManager
  */
 class FixturesManager {
     // eslint-disable-next-line no-use-before-define
@@ -100,14 +85,14 @@ class FixturesManager {
     public fixtures: IFixtures<IFixtureInserted | IFixtureDoc> = {}
 
     /**
-     * Private constructor to enforce Singleton pattern.
+     * 🔒 Private constructor to enforce Singleton pattern.
      * Use `getInstance()` to access the FixturesManager instance.
      * @private
      */
     private constructor() {}
 
     /**
-     * Retrieves the singleton instance of FixturesManager.
+     * 🌐 Retrieves the singleton instance of FixturesManager.
      * Initializes the instance on first access.
      * @static
      * @async
@@ -123,7 +108,7 @@ class FixturesManager {
     }
 
     /**
-     * Initializes the FixturesManager by loading fixtures and models.
+     * ⚙️ Initializes the FixturesManager by loading fixtures and models.
      * @private
      * @async
      * @returns {Promise<void>} Resolves when initialization is complete.
@@ -139,7 +124,7 @@ class FixturesManager {
     }
 
     /**
-     * Loads fixture files matching the given glob pattern.
+     * 📂 Loads fixture files matching the given glob pattern.
      * Organizes them by database and collection names.
      * @private
      * @async
@@ -172,7 +157,6 @@ class FixturesManager {
             // Assign the fixture to the structure
             fixtures[dbName][collectionName][id] = {
                 docContents, name
-
             }
         }
 
@@ -180,7 +164,7 @@ class FixturesManager {
     }
 
     /**
-     * Inserts specified fixtures into the in-memory MongoDB instance.
+     * ➕ Inserts specified fixtures into the in-memory MongoDB instance.
      * @async
      * @param {string[]} ids - Array of fixture IDs to insert.
      * @returns {Promise<Record<string, IFixture>>} The inserted fixture data.
@@ -246,7 +230,7 @@ class FixturesManager {
     }
 
     /**
-     * Retrieves the fixture object based on the given ID.
+     * 🔍 Retrieves the fixture object based on the given ID.
      * @param {string} id - The ID of the fixture to retrieve.
      * @returns {IFixtureDoc | IFixtureInserted} The fixture object.
      * @throws {ResourceNotFoundError} If the fixture ID is not found.
@@ -255,20 +239,20 @@ class FixturesManager {
         for (const dbName in this.fixtures) {
             for (const collectionName in this.fixtures[dbName]) {
                 const fixture = this.fixtures[dbName][collectionName][id]
-
                 if (fixture) {
                     return fixture
                 }
             }
         }
 
-        throw new ResourceNotFoundError(`[Model Manager] - Fixture not found: ${id}`, {
-            id
-        })
+        throw new ResourceNotFoundError(`[Model Manager] - Fixture not found: ${id}`, { id })
     }
 
     /**
-     * Cleans up specific fixtures and stops associated MongoMemoryServer instances.
+     * 🧹 Cleans up specific fixtures and stops associated MongoMemoryServer instances.
+     * This method iterates through the specified fixture IDs, stopping their associated
+     * MongoMemoryServer instances if they exist and removing the fixtures from memory.
+     * 
      * @async
      * @param {string[]} ids - Array of fixture IDs to clean up.
      * @returns {Promise<void>} Resolves when cleanup is complete.
@@ -281,25 +265,29 @@ class FixturesManager {
 
                     if (fixture) {
                         if ('mongoServer' in fixture) {
-                            // Stop the specific memory server for this fixture
+                        // ⏹️ Stop the specific memory server for this fixture
                             await fixture.mongoServer.stop()
                         }
 
                         delete this.fixtures[dbName][collectionName][id]
-                    }
+                    } 
                 }
             }
         }))
     }
 
     /**
-     * Cleans up all fixtures and stops associated MongoMemoryServer instances.
+     * 🧹 Cleans up all fixtures and stops associated MongoMemoryServer instances.
+     * This method iterates through all fixtures stored in memory, stopping their 
+     * associated MongoMemoryServer instances and clearing the fixtures from memory.
+     * 
      * @async
+     * @throws {Error} Throws an error if there is an issue stopping any of the memory servers.
      * @returns {Promise<void>} Resolves when cleanup is complete.
      */
     public async cleanAll(): Promise<void> {
         const stops = []
-        
+    
         for (const db of Object.values(this.fixtures)) {
             for (const collection of Object.values(db)) {
                 for (const fixture of Object.values(collection)) {
