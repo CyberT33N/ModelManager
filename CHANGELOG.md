@@ -1,3 +1,12 @@
+# [1.5.0](https://github.com/CyberT33N/ModelManager/compare/v1.4.0...v1.5.0) (2024-10-18)
+
+
+### Features
+
+* **CCS-001:** Added FixtureManager ([f130e54](https://github.com/CyberT33N/ModelManager/commit/f130e54dad3540f91caa710c6c90c934e25237c0))
+
+
+
 # [1.4.0](https://github.com/CyberT33N/ModelManager/compare/v1.3.0...v1.4.0) (2024-10-12)
 
 
