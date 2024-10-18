@@ -19,7 +19,7 @@ import mongoose from 'mongoose'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import {
     describe, it, expect, assert,
-    beforeEach, afterEach, beforeAll
+    beforeEach, beforeAll
 } from 'vitest'
 
 // ==== INTERNAL ====
@@ -52,12 +52,6 @@ describe('[UNIT TEST] - src/ModelUtils.ts', () => {
                     mongooseConnectSpy = sinon.spy(mongoose, 'createConnection')
                     mongooseUtilsCreateSchemaStub = sinon.stub(MongooseUtils, 'createSchema')
                         .returns(mongooseSchema as mongoose.Schema<unknown>)
-                })
-
-                afterEach(() => {
-                    mongooseUtilsCreateSchemaStub.restore()
-                    mongoMemoryServerSpy.restore()
-                    mongooseConnectSpy.restore()
                 })
 
                 describe('[ERROR]', () => {

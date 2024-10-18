@@ -25,13 +25,7 @@ describe('[UNIT TEST] - src/ModelUtils.ts', () => {
     let modelCoreDetails: IModelCore
      
     beforeAll(async() => {
-        const { modelName, dbName, schema }: IModelCore = await import('@/test/models/Test.model.mjs')
-  
-        modelCoreDetails = {
-            modelName,
-            dbName,
-            schema
-        }
+        modelCoreDetails = await import('@/test/models/Test.model.mjs')
     })
 
     describe('[SNAPSHOT]', () => {

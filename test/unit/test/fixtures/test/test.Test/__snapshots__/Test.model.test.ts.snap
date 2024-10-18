@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`[UNIT TEST] - src/ModelUtils.ts > [SNAPSHOT] > [INVALID] > [DUPLICATED] > should match the schema snapshot 1`] = `
+{
+  "docContents": {
+    "__v": 0,
+    "_id": "000000000000000000000003",
+    "decimals": 18n,
+    "name": "Unit Test fixture",
+  },
+  "name": "Example test fixture only for unit tests",
+}
+`;
+
+exports[`[UNIT TEST] - src/ModelUtils.ts > [SNAPSHOT] > [INVALID] > [DUPLICATED] > should match the schema snapshot 2`] = `
+{
+  "docContents": {
+    "__v": 0,
+    "_id": "000000000000000000000003",
+    "decimals": 18n,
+    "name": "Unit Test fixture - other name but same id",
+  },
+  "name": "Example test fixture only for unit tests",
+}
+`;
+
+exports[`[UNIT TEST] - src/ModelUtils.ts > [SNAPSHOT] > [VALID] > should match the schema snapshot 1`] = `
+{
+  "docContents": {
+    "__v": 0,
+    "_id": "000000000000000000000002",
+    "decimals": 18n,
+    "name": "Unit Test fixture",
+  },
+  "name": "Example test fixture only for unit tests",
+}
+`;
+
+exports[`[UNIT TEST] - src/ModelUtils.ts > [SNAPSHOT] > [VALID] > should match the schema snapshot 2`] = `
+{
+  "docContents": {
+    "__v": 0,
+    "_id": "000000000000000000000004",
+    "decimals": 18n,
+    "name": "Unit Test fixture #2",
+  },
+  "name": "Example test fixture only for unit tests #2",
+}
+`;

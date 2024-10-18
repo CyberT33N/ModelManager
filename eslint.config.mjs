@@ -79,8 +79,10 @@ export default tseslint.config(
             '@typescript-eslint/no-empty-function': 'off',
 
             // Disable for accessing private properties e.g. ModelManager['instance']
-            '@typescript-eslint/dot-notation': 'off'
+            '@typescript-eslint/dot-notation': 'off',
 
+            // Allowing records and index types
+            '@typescript-eslint/consistent-indexed-object-style': 'off'
         }
     }
 )

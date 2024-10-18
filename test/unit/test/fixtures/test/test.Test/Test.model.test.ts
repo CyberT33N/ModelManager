@@ -14,61 +14,43 @@
 */
 
 // ==== DEPENDENCIES ====
-import sinon from 'sinon'
-import mongoose from 'mongoose'
-import { beforeAll, afterAll, afterEach } from 'vitest'
+import {
+    describe, it, expect, beforeAll
+} from 'vitest'
 
 // ==== INTERNAL ====
-import type { IModel, IModelCore } from '@/src/ModelManager'
-import { default as ModelUtils, type IMemoryModel } from '@/src/ModelUtils'
+import type { IFixtureDoc } from '@/src/FixturesManager'
 
-declare global {
-    // eslint-disable-next-line no-var
-    var modelDetails: IModel<any>
-    // eslint-disable-next-line no-var
-    var mongooseSchema: mongoose.Schema
-    // eslint-disable-next-line no-var
-    var memoryModelDetails: IMemoryModel<any>
-    // eslint-disable-next-line no-var
-    var docData: Record<string, any>
-}
+describe('[UNIT TEST] - src/ModelUtils.ts', () => {
+    let fixtureDoc: IFixtureDoc
+    let fixtureDoc2: IFixtureDoc
+    let fixtureDocDuplicated1: IFixtureDoc
+    let fixtureDocDuplicated2: IFixtureDoc
+     
+    beforeAll(async() => {
+        fixtureDoc = await import('@/test/fixtures/test/test.Test/0_test.ts') as IFixtureDoc
+        fixtureDoc2 = await import('@/test/fixtures/test/test.Test/1_test.ts') as IFixtureDoc
 
-/*
-  Defining types below will not work because we can not assign them in runtime.
-  However, for completion purposes, we will define them here.
-*/
-beforeAll(async() => {
-    const {
-        modelName, dbName, schema
-    }: IModelCore = await import('@/test/models/Test.model.mjs')
-  
-    // Generate the Mongoose schema type
-    type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-
-    ;globalThis.mongooseSchema = new mongoose
-        .Schema<TMongooseSchema>(schema, { collection: modelName })
-
-    globalThis.memoryModelDetails = await ModelUtils.createMemoryModel<TMongooseSchema>({
-        modelName,
-        dbName,
-        schema
+        // Duplicated fixtures
+        fixtureDocDuplicated1 = await import('@/test/fixtures/error/duplicated/0_test.ts') as IFixtureDoc
+        fixtureDocDuplicated2 = await import('@/test/fixtures/error/duplicated/1_test.ts') as IFixtureDoc
     })
 
-    globalThis.modelDetails = {
-        modelName,
-        Model: globalThis.memoryModelDetails.Model,
-        dbName,
-        schema
-    }
+    describe('[SNAPSHOT]', () => {
+        describe('[INVALID]', () => {
+            describe('[DUPLICATED]', () => {
+                it('should match the schema snapshot', () => {
+                    expect(fixtureDocDuplicated1).toMatchSnapshot()
+                    expect(fixtureDocDuplicated2).toMatchSnapshot()
+                })
+            })
+        })
 
-    globalThis.docData = { name: 'test', decimals: 69n }
-})
-
-afterAll(async() => {
-    // Calling stop() will only close the specifc connection and not all created memory-db connections
-    await globalThis.memoryModelDetails.mongoServer.stop()
-})
-
-afterEach(() => {
-    sinon.restore()
+        describe('[VALID]', () => {
+            it('should match the schema snapshot', () => {
+                expect(fixtureDoc).toMatchSnapshot()
+                expect(fixtureDoc2).toMatchSnapshot()
+            })
+        })
+    })
 })
