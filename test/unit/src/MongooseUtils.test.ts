@@ -20,7 +20,7 @@ import sinon from 'sinon'
 import {
     describe, it, assert,
     expect, expectTypeOf,
-    beforeEach, afterEach, beforeAll
+    beforeEach, beforeAll
 } from 'vitest'
 
 import {
@@ -126,14 +126,12 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                 })
 
                 describe('[ERROR]', () => {
-                    let createConnectionStub: sinon.SinonStub
-
                     const expectedErrorMessage = 'Connection error'
 
                     beforeEach(() => {
                         const error = new Error(expectedErrorMessage)
 
-                        createConnectionStub = sinon.stub(mongoose, 'createConnection').returns({
+                        sinon.stub(mongoose, 'createConnection').returns({
                             asPromise: () => Promise.reject(error)
                         } as unknown as mongoose.Connection)
                     })

@@ -311,33 +311,64 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                         findOneStub.withArgs({ _id: docId }).onSecondCall().resolves(expectedDoc)
                     })
 
-                    it('should insert documents into the specified collections', async() => {
-                        const result = await fixturesManager.insert([docId])
+                    describe('[SINGLE FIXTURE]', () => {
+                        it('should insert specific fixture into the specified collections', async() => {
+                            const result = await fixturesManager.insert([docId])
 
-                        // ==== SPIES/STUBS ====
-                        expect(getModelStub.calledOnceWithExactly(collectionName)).toBe(true)
+                            // ==== SPIES/STUBS ====
+                            expect(getModelStub.calledOnceWithExactly(collectionName)).toBe(true)
 
-                        expect(createMemoryModelStub.calledOnceWithExactly({
-                            dbName,
-                            modelName: collectionName,
-                            schema: modelDetails.schema
-                        })).toBe(true)
+                            expect(createMemoryModelStub.calledOnceWithExactly({
+                                dbName,
+                                modelName: collectionName,
+                                schema: modelDetails.schema
+                            })).toBe(true)
 
-                        expect(modelCreateStub.calledOnceWithExactly(fixturesDoc.docContents)).toBe(true)
+                            expect(modelCreateStub.calledOnceWithExactly(fixturesDoc.docContents)).toBe(true)
 
-                        expect(leanStub.calledOnce).toBe(true)
-                        expect(findOneStub.calledTwice).toBe(true)
+                            expect(leanStub.calledOnce).toBe(true)
+                            expect(findOneStub.calledTwice).toBe(true)
 
-                        expect(toObjectStub.calledOnce).toBe(true)
+                            expect(toObjectStub.calledOnce).toBe(true)
 
-                        // ==== EXPECTATIONS ====
-                        expect(result[docId].doc).toEqual(expectedDoc)
-                        expect(result[docId].docContents).toEqual(fixturesDoc.docContents)
-                        expect(result[docId].docLean).toEqual(expecteddocLean)
-                        expect(result[docId].Model).toEqual(memoryModelDetails.Model)
-                        expect(result[docId].mongoServer).toEqual(memoryModelDetails.mongoServer)
-                        expect(result[docId].name).toEqual(fixturesDoc.name)
-                        expect(result[docId].docToObject).toEqual(expectedToObjectDoc)
+                            // ==== EXPECTATIONS ====
+                            expect(result[docId].doc).toEqual(expectedDoc)
+                            expect(result[docId].docContents).toEqual(fixturesDoc.docContents)
+                            expect(result[docId].docLean).toEqual(expecteddocLean)
+                            expect(result[docId].Model).toEqual(memoryModelDetails.Model)
+                            expect(result[docId].mongoServer).toEqual(memoryModelDetails.mongoServer)
+                            expect(result[docId].name).toEqual(fixturesDoc.name)
+                            expect(result[docId].docToObject).toEqual(expectedToObjectDoc)
+                        })
+                    })
+
+                    describe('[MULTIPLE FIXTURES]', () => {
+                        beforeEach(() => {
+                            findOneStub.withArgs({ _id: docId2 }).onFirstCall().returns({
+                                lean: leanStub
+                            })
+    
+                            findOneStub.withArgs({ _id: docId2 }).onSecondCall().resolves(expectedDoc)
+                        })
+    
+                        it('should insert multiple fixtures into the specified collections', async() => {
+                            const result = await fixturesManager.insert([docId, docId2])
+
+                            // ==== SPIES/STUBS ====
+                            expect(getModelStub.calledTwice).toBe(true)
+                            expect(createMemoryModelStub.calledTwice).toBe(true)
+
+                            expect(modelCreateStub.firstCall.calledWithExactly(fixturesDoc.docContents)).toBe(true)
+                            expect(modelCreateStub.secondCall.calledWithExactly(fixturesDoc2.docContents)).toBe(true)
+
+                            expect(leanStub.calledTwice).toBe(true)
+                            expect(findOneStub.callCount).toBe(4)
+                            expect(toObjectStub.calledTwice).toBe(true)
+
+                            // ==== EXPECTATIONS ====
+                            expect(result[docId].name).toEqual(fixturesDoc.name)
+                            expect(result[docId2].name).toEqual(fixturesDoc2.name)
+                        })
                     })
                 })
             })
@@ -394,22 +425,44 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                 })
 
                 describe('clean()', () => {
-                    it('should clean up specific fixture', async() => {
-                        // Check if the fixture is there
-                        expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(fixturesDoc)
-                        expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
+                    describe('[SPECIFIC FIXTURE]', () => {
+                        it('should clean up specific fixture', async() => {
+                            // Check if the fixture is there
+                            expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(fixturesDoc)
+                            expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
 
-                        await fixturesManager.clean([docId])
+                            await fixturesManager.clean([docId])
 
-                        // ==== EXPECTATIONS ====
-                        // Check if the specified fixture is removed
-                        expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(undefined)
-                        // Check if second fixture is still there
-                        expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
+                            // ==== EXPECTATIONS ====
+                            // Check if the specified fixture is removed
+                            expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(undefined)
+                            // Check if second fixture is still there
+                            expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
 
-                        // ==== SPIES/STUBS ====
-                        expect(mongoServerStub.calledOnce).toBe(true)
-                        expect(promiseAllSpy.calledOnce).toBe(true)
+                            // ==== SPIES/STUBS ====
+                            expect(mongoServerStub.calledOnce).toBe(true)
+                            expect(promiseAllSpy.calledOnce).toBe(true)
+                        })
+                    })
+
+                    describe('[MULTIPLE FIXTURES]', () => {
+                        it('should clean up multiple fixtures', async() => {
+                            // Check if the fixture is there
+                            expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(fixturesDoc)
+                            expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
+
+                            await fixturesManager.clean([docId, docId2])
+
+                            // ==== EXPECTATIONS ====
+                            // Check if the specified fixture is removed
+                            expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(undefined)
+                            // Check if second fixture is still there
+                            expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(undefined)
+
+                            // ==== SPIES/STUBS ====
+                            expect(mongoServerStub.calledTwice).toBe(true)
+                            expect(promiseAllSpy.calledOnce).toBe(true)
+                        })
                     })
                 })
 

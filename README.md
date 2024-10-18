@@ -5,13 +5,17 @@ This module consists of four essential components:
 - **Model Utils**
 - **Mongoose Utils**
 
+<br>
+
 Together, they streamline the management and creation of Mongoose models and MongoDB connections in Node.js, providing a comprehensive framework for:
 
 - **Dynamic Model Creation**: Seamlessly generate Mongoose models on the fly, making it easier to scale and adapt to changing data structures.
   
-- **In-Memory Testing**: Utilize the `MongoMemoryServer` for running tests with isolated in-memory databases. This approach ensures fast, reliable, and deterministic tests without affecting production databases.
+- **In-Memory Testing**: If needed utilize Models with the [mongodb-memory-server](https://www.npmjs.com/package/mongodb-memory-server) for running tests with isolated in-memory databases. This approach ensures fast, reliable, parallel and deterministic tests.
 
 - **Multi-Tenant Database Management**: Manage multiple databases dynamically, enabling multi-tenancy support by handling distinct connections for different client environments effortlessly.
+
+<br>
 
 By combining `FixturesManager` and `ModelManager`, this framework empowers developers to achieve **high performance**, **scalability**, and **modularity**. It optimizes development workflows by automating model creation and fixture handling, which enhances both testing efficiency and overall application reliability.
 
@@ -81,7 +85,7 @@ export { dbName, modelName, schema }
 
 <br>
 
-### .getInstance()
+### `.getInstance()`
 - Retrieves the singleton instance of the ModelManager. Initializes the instance on the first call.
 ```typescript
 /**
@@ -97,7 +101,7 @@ const modelManager = await ModelManager.getInstance()
 
 <br><br>
 
-### .getModel()
+### `.getModel()`
 - Retrieves a Mongoose model by its name. Throws an error if the model is not found.
 
 ```typescript
@@ -117,7 +121,7 @@ const model = modelManager.getModel(modelName)
 
 <br><br>
 
-### .getModels()
+### `.getModels()`
 - Returns all loaded Mongoose models.
 
 ```typescript
@@ -138,7 +142,7 @@ const models = modelManager.getModels()
 
 <br><br>
 
-### .createModel()
+### `.createModel()`
 - Create a new mongoose model and push it to the instance
 ```typescript
 /**
@@ -216,7 +220,7 @@ The **Model Utils** class specializes at the moment in creating in-memory models
 
 <br>
 
-## .createMemoryModel()
+## `.createMemoryModel()`
 - Creates an in-memory Mongoose model, connecting it to an in-memory MongoDB instance. This is particularly useful for unit/integration testing without needing to spin up a real MongoDB server
 ```typescript
 /**
@@ -309,7 +313,7 @@ The **Mongoose Utils** class offers tools for managing and creating Mongoose con
 
 <br>
 
-### .getInstance()
+### `.getInstance()`
 - Retrieves the singleton instance of `MongooseUtils` for a specific database. Initializes the instance on the first call.
 ```typescript
 /**
@@ -328,7 +332,7 @@ const mongooseUtils = MongooseUtils.getInstance('YourDatabaseName')
 
 <br><br>
 
-## .getConnection()
+## `.getConnection()`
 - Retrieves the MongoDB connection, initializing it if not already connected.
 
 ```typescript
@@ -350,8 +354,8 @@ const conn = await mongooseUtils.getConnection()
 
 <br><br>
 
-## .createSchema()
-- reates a new Mongoose schema for a model.
+## `.createSchema()`
+- Creates a new Mongoose schema for a model.
 ```typescript
 **
 * @template TMongooseSchema - Interface representing the Mongoose schema.
@@ -393,7 +397,7 @@ const model = await MongooseUtils.createSchema<IUser>(
 
 <br><br>
 
-## .createModel()
+## `.createModel()`
 - Creates a Mongoose model for a specific schema and collection. This method connects to the database, defines a schema, and initializes a model.
 
 ```typescript
@@ -459,15 +463,17 @@ const model = await mongooseUtils.createModel<IUser>(
 
 
 
-
+<br><br><br><br>
 
 
 
 # 🛠️ FixturesManager
-- This project provides a Singleton pattern-based `FixturesManager` to handle fixtures for MongoDB in-memory database testing, specifically for Mongoose models. It's designed to load, insert, and clean up test data efficiently, supporting integration with `MongoMemoryServer` and automated fixture loading from file system patterns.
+- This project provides a Singleton pattern-based `FixturesManager` to handle fixtures for MongoDB in-memory database testing, specifically for Mongoose models. It's designed to load, insert, and clean up test data efficiently, supporting integration with [mongodb-memory-server](https://www.npmjs.com/package/mongodb-memory-server) and automated fixture loading from file system patterns.
 
 
 <details><summary>Click to expand..</summary>
+
+<br>
 
 # ✨ Features
 - **Singleton Pattern**: Ensures only one instance of the manager exists.
@@ -624,7 +630,8 @@ public getFixture(id: string): IFixtureDoc | IFixtureInserted
 import { FixturesManager } from 'mongoose-model-manager'
 const fixturesManager = await FixturesManager.getInstance()
 
-const fixture = await fixturesManager.insert(fixtureId)
+await fixturesManager.insert(fixtureId)
+const fixture = await fixturesManager.getFixture(fixtureId)
 ```
 
 <br>
@@ -665,7 +672,6 @@ const fixture = await fixturesManager.insert(fixtureId)
 const fixture2 = await fixturesManager.insert(fixtureId2)
 await fixturesManager.cleanAll()
 ```
-
 
 
 

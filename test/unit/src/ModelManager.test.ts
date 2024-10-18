@@ -20,7 +20,7 @@ import { ValidationError, ResourceNotFoundError } from 'error-manager-helper'
 import {
     describe, it, expect, assert,
     beforeAll,
-    beforeEach, afterEach
+    beforeEach
 } from 'vitest'
 
 // ==== INTERNAL ====
