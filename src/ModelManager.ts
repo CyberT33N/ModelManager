@@ -196,12 +196,13 @@ export default class ModelManager {
         // 🧩 Ensure indexes are created for the model
         await Model.createIndexes()
 
-        this.models.push({
+        this.pushModel<TMongooseSchema>({
             modelName,
             Model,
             dbName,
             schema
         })
+
         return Model
     }
 }

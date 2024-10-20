@@ -199,6 +199,7 @@ describe('[UNIT TEST] - src/ModelManager.ts', () => {
                 let mongooseUtilsGetInstanceStub: sinon.SinonStub
                 let mongooseUtilsCreateModelStub: sinon.SinonStub
                 let modelCreateIndexesStub: sinon.SinonStub
+                let pushModelSpy: sinon.SinonSpy
             
                 beforeEach(() =>{
                     mongooseUtilsCreateModelStub = sinon.stub().resolves(modelDetails.Model)
@@ -208,6 +209,8 @@ describe('[UNIT TEST] - src/ModelManager.ts', () => {
                     } as unknown as MongooseUtils)
                     
                     modelCreateIndexesStub = sinon.stub(modelDetails.Model, 'createIndexes').resolves()
+
+                    pushModelSpy = sinon.spy(ModelManager.prototype, 'pushModel' as keyof ModelManager)
                 })
             
                 it('should create a new mongoose model and call createIndexes()', async() => {
@@ -225,6 +228,7 @@ describe('[UNIT TEST] - src/ModelManager.ts', () => {
                         mongooseUtilsCreateModelStub.calledOnceWithExactly(schema, modelName)
                     ).toBe(true)
                     expect(modelCreateIndexesStub.calledOnce).toBe(true)
+                    expect(pushModelSpy.calledOnceWithExactly(modelDetails)).toBe(true)
             
                     // ==== EXPECTS ====
                     expect(createdModel).toEqual(Model)
