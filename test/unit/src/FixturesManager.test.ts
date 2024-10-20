@@ -13,7 +13,14 @@
 ███████████████████████████████████████████████████████████████████████████████
 */
 
-// ==== DEPENDENCIES ====
+/**
+ * 📦 Import external dependencies
+ * @module sinon - Standalone test spies, stubs and mocks for JavaScript
+ * @module lodash - A modern JavaScript utility library delivering modularity, performance & extras
+ * @module glob - A little globber
+ * @module error-manager-helper - Custom error management utility
+ * @module vitest - Next generation testing framework
+ */
 import sinon from 'sinon'
 import _ from 'lodash'
 import { glob } from 'glob'
@@ -27,31 +34,69 @@ import {
     expect
 } from 'vitest'
 
-// ==== INTERNAL DEPENDENCIES ====
+/**
+ * 🏠 Import internal dependencies
+ * @module ModelManager - Manages models in the application
+ * @module ModelUtils - Utility functions for working with models
+ */
 import ModelManager, { type IModel } from '@/src/ModelManager'
 import ModelUtils, { type IMemoryModel } from '@/src/ModelUtils'
 
-// ==== CODE TO TEST ====
+/**
+ * 🧪 Import code to test
+ * @module FixturesManager - Manages fixtures for testing
+ */
 import FixturesManager, {
     type IFixtureDoc, type IFixtures
 } from '@/src/FixturesManager'
 
+/**
+ * 📚 Test suite for FixturesManager
+ * @description Unit tests for the FixturesManager module
+ */
 describe('[UNIT TEST] - src/FixtureManager.ts', () => {
+    /**
+     * 🔧 Test setup variables
+     * @type {FixturesManager} fixturesManager - Instance of FixturesManager
+     * @type {sinon.SinonStub} initStub - Stub for the init method
+     */
     let fixturesManager: FixturesManager
     let initStub: sinon.SinonStub
 
+    /**
+     * 📊 Test data variables
+     * @type {IFixtures<IFixtureDoc>} fixtures - Fixture data
+     * @type {IFixtureDoc} fixturesDoc - First fixture document
+     * @type {IFixtureDoc} fixturesDoc2 - Second fixture document
+     * @type {string} docId - ID of the first document
+     * @type {string} docId2 - ID of the second document
+     */
     let fixtures: IFixtures<IFixtureDoc>
     let fixturesDoc: IFixtureDoc
     let fixturesDoc2: IFixtureDoc
     let docId: string
     let docId2: string
 
+    /**
+     * 📋 Model details variables
+     * @type {IModel<any>} modelDetails - Details of the model
+     * @type {IMemoryModel<any>} memoryModelDetails - Details of the memory model
+     */
     let modelDetails: IModel<any>
     let memoryModelDetails: IMemoryModel<any>
 
+    /**
+     * 🗄️ Database and collection names
+     * @type {string} dbName - Name of the database
+     * @type {string} collectionName - Name of the collection
+     */
     const dbName = 'test'
     const collectionName = 'test.Test'
 
+    /**
+     * 🏁 Before all tests setup
+     * @description Imports fixtures and sets up test data
+     */
     beforeAll(async() => {
         modelDetails = globalThis.modelDetails
         memoryModelDetails = globalThis.memoryModelDetails
@@ -71,6 +116,10 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
         }
     })
 
+    /**
+     * 🔄 Before each test setup
+     * @description Resets the FixturesManager instance and stubs
+     */
     beforeEach(async() => {
         initStub = sinon.stub(
             FixturesManager.prototype, 'init' as keyof FixturesManager
@@ -82,17 +131,33 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
         fixturesManager.fixtures = _.cloneDeep(fixtures)
     })
 
+    /**
+     * 🧹 After each test cleanup
+     * @description Cleans up all fixtures after each test
+     */
     afterEach(async() => {
         await fixturesManager.cleanAll()
     })
 
+    /**
+     * 🏭 Test suite for getInstance method
+     * @description Tests the singleton pattern implementation
+     */
     describe('getInstance()', () => {
+        /**
+         * 🧪 Test case: Creating a new instance
+         * @description Verifies that a new instance is created correctly
+         */
         it('should create new instance', () => {
             expect(initStub.calledOnce).toBe(true)
             expect(fixturesManager).toBeInstanceOf(FixturesManager)
             expect(fixturesManager.fixtures).toEqual(fixtures)
         })
 
+        /**
+         * 🧪 Test case: Returning an existing instance
+         * @description Verifies that the existing instance is returned
+         */
         it('should return existing instance', async() => {
             const fixturesManager2 = await FixturesManager.getInstance()
             expect(initStub.calledOnce).toBe(true)
@@ -102,11 +167,28 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
     })
 
     describe('[METHODS]', () => {
+        /**
+         * 🔒 Test suite for private methods
+         * @description Tests the internal workings of FixturesManager
+         */
         describe('[PRIVATE]', () => {
+            /**
+             * 🚀 Test suite for init method
+             * @description Tests the initialization process of FixturesManager
+             */
             describe('init()', () => {
+                /**
+                 * 🔧 Test setup variables
+                 * @type {sinon.SinonStub} globFixturesStub - Stub for globFixtures method
+                 * @type {sinon.SinonStub} getInstanceStub - Stub for ModelManager.getInstance
+                 */
                 let globFixturesStub: sinon.SinonStub
                 let getInstanceStub: sinon.SinonStub
 
+                /**
+                 * 🔄 Before each test setup
+                 * @description Sets up stubs for init method tests
+                 */
                 beforeEach(() => {
                     initStub.restore()
 
@@ -119,7 +201,10 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                     ).resolves()
                 })
 
-
+                /**
+                 * 🧪 Test case: Initializing fixtures
+                 * @description Verifies that fixtures are initialized correctly
+                 */
                 it('should initialize fixtures if not already initialized', async() => {
                     fixturesManager.fixtures = {}
 
@@ -135,6 +220,10 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                     expect(fixturesManager.fixtures).toEqual({})
                 })
 
+                /**
+                 * 🧪 Test case: Skipping initialization
+                 * @description Verifies that initialization is skipped if fixtures are already present
+                 */
                 it('should not initialize fixtures if already initialized', async() => {
                     await fixturesManager['init']()
                     
@@ -146,16 +235,36 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                 })
             })
 
+            /**
+             * 🌐 Test suite for globFixtures method
+             * @description Tests the fixture globbing process
+             */
             describe('globFixtures()', () => {
+                /**
+                 * ❌ Test suite for error scenarios
+                 * @description Tests error handling in globFixtures method
+                 */
                 describe('[ERROR]', () => {
+                    /**
+                     * 🔧 Test setup variables
+                     * @type {IFixtureDoc} fixturesDocDuplicated - Duplicated fixture document
+                     */
                     let fixturesDocDuplicated: IFixtureDoc
 
+                    /**
+                     * 🏁 Before all tests setup
+                     * @description Imports duplicated fixture document
+                     */
                     beforeAll(async() => {
                         fixturesDocDuplicated = await import(
                             '@/test/fixtures/error/duplicated/0_test'
                         ) as IFixtureDoc
                     })
 
+                    /**
+                     * 🧪 Test case: Handling duplicate fixture ids
+                     * @description Verifies that an error is thrown for duplicate fixture ids
+                     */
                     it('should throw an error if there are duplicate fixture ids', async() => {
                         const expression = `${process.cwd()}/test/fixtures/error/**/*.ts`
                         const docId = fixturesDocDuplicated.docContents._id.toString()
@@ -177,14 +286,31 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                     })
                 })
 
+                /**
+                 * ✅ Test suite for success scenarios
+                 * @description Tests successful execution of globFixtures method
+                 */
                 describe('[SUCCESS]', () => {
+                    /**
+                     * 🔧 Test setup variables
+                     * @type {sinon.SinonSpy} globSpy - Spy for glob.sync method
+                     * @type {string} expression - Glob expression for fixtures
+                     */
                     let globSpy: sinon.SinonSpy
                     const expression = `${process.cwd()}/test/fixtures/test/**/*.ts`
 
+                    /**
+                     * 🔄 Before each test setup
+                     * @description Sets up spy for glob.sync method
+                     */
                     beforeEach(() => {
                         globSpy = sinon.spy(glob, 'sync')
                     })
 
+                    /**
+                     * 🧪 Test case: Globbing and loading fixtures
+                     * @description Verifies that fixtures are correctly globbed and loaded
+                     */
                     it('should glob and load fixtures from the file system', async() => {
                         const globbedFixtures = await fixturesManager['globFixtures'](expression)
                         expect(globSpy.calledOnceWithExactly(expression)).toBe(true)
@@ -206,9 +332,25 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
             })
         })
 
+        /**
+         * 🔓 Test suite for public methods
+         * @description Tests the public interface of FixturesManager
+        */
         describe('[PUBLIC]', () => {
+            /**
+             * ➕ Test suite for insert method
+             * @description Tests the fixture insertion process
+             */
             describe('insert()', () => {
+                /**
+                 * ❌ Test suite for error scenarios
+                 * @description Tests error handling in insert method
+                 */
                 describe('[ERROR]', () => {
+                    /**
+                     * 🧪 Test case: Handling already inserted fixtures
+                     * @description Verifies that an error is thrown for already inserted fixtures
+                     */
                     it('should throw an error if the fixture is already inserted', async() => {
                         const expectedDoc = {
                             name: fixturesDoc.name,
@@ -240,6 +382,10 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                         }
                     })
 
+                    /**
+                     * 🧪 Test case: Handling non-existent fixtures
+                     * @description Verifies that an error is thrown for non-existent fixtures
+                     */
                     it('should throw an error if the fixture id is not found', async() => {
                         const sampleFixtureId = 'notFound'
 
@@ -263,21 +409,41 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                     })
                 })
 
+                /**
+                 * ✅ Test suite for success scenarios
+                 * @description Tests successful execution of insert method
+                 */
                 describe('[SUCCESS]', () => {
+                    /**
+                     * 🔧 Test setup variables
+                     * @type {sinon.SinonStub} getModelStub - Stub for getModel method
+                     * @type {sinon.SinonStub} createMemoryModelStub - Stub for createMemoryModel method
+                     * @type {sinon.SinonStub} modelCreateStub - Stub for model creation
+                     * @type {Record<string, any>} expectedDoc - Expected document structure
+                     * @type {sinon.SinonStub} findOneStub - Stub for findOne method
+                     * @type {sinon.SinonStub} leanStub - Stub for lean method
+                     * @type {sinon.SinonStub} toObjectStub - Stub for toObject method
+                     */
                     let getModelStub: sinon.SinonStub
-
                     let createMemoryModelStub: sinon.SinonStub
                     let modelCreateStub: sinon.SinonStub
-
                     let expectedDoc: Record<string, any>
-
                     let findOneStub: sinon.SinonStub
                     let leanStub: sinon.SinonStub
                     let toObjectStub: sinon.SinonStub
 
+                    /**
+                     * 📊 Expected results
+                     * @type {Object} expecteddocLean - Expected lean document
+                     * @type {Object} expectedToObjectDoc - Expected toObject document
+                     */
                     const expecteddocLean = { lean: true }
                     const expectedToObjectDoc = { toObject: true }
 
+                    /**
+                     * 🔄 Before each test setup
+                     * @description Sets up stubs and mocks for each test
+                     */
                     beforeEach(() => {
                         getModelStub = sinon.stub()
                         fixturesManager['modelManager'] = {
@@ -302,7 +468,7 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                         })
 
                         toObjectStub = sinon.stub().returns(expectedToObjectDoc)
-                    
+            
                         expectedDoc = {
                             normalDoc: true,
                             toObject: toObjectStub
@@ -311,7 +477,15 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                         findOneStub.withArgs({ _id: docId }).onSecondCall().resolves(expectedDoc)
                     })
 
+                    /**
+                     * 🧪 Test suite for single fixture insertion
+                     * @description Tests the insertion of a single fixture
+                     */
                     describe('[SINGLE FIXTURE]', () => {
+                        /**
+                         * 🧪 Test case: Inserting a specific fixture
+                         * @description Verifies that a single fixture is correctly inserted
+                         */
                         it('should insert specific fixture into the specified collections', async() => {
                             const result = await fixturesManager.insert([docId])
 
@@ -342,15 +516,27 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                         })
                     })
 
+                    /**
+                     * 🧪 Test suite for multiple fixture insertion
+                     * @description Tests the insertion of multiple fixtures
+                     */
                     describe('[MULTIPLE FIXTURES]', () => {
+                        /**
+                         * 🔄 Before each test setup
+                         * @description Sets up additional stubs for multiple fixture tests
+                         */
                         beforeEach(() => {
                             findOneStub.withArgs({ _id: docId2 }).onFirstCall().returns({
                                 lean: leanStub
                             })
-    
+
                             findOneStub.withArgs({ _id: docId2 }).onSecondCall().resolves(expectedDoc)
                         })
-    
+
+                        /**
+                         * 🧪 Test case: Inserting multiple fixtures
+                         * @description Verifies that multiple fixtures are correctly inserted
+                         */
                         it('should insert multiple fixtures into the specified collections', async() => {
                             const result = await fixturesManager.insert([docId, docId2])
 
@@ -373,8 +559,20 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                 })
             })
 
+            /**
+             * 🔍 Test suite for getFixture method
+             * @description Tests the fixture retrieval process
+             */
             describe('getFixture()', () => {
+                /**
+                 * ❌ Test suite for error scenarios
+                 * @description Tests error handling in getFixture method
+                 */
                 describe('[ERROR]', () => {
+                    /**
+                     * 🧪 Test case: Handling non-existent fixtures
+                     * @description Verifies that an error is thrown for non-existent fixtures
+                     */
                     it('should throw an error if the fixture is not found', () => {
                         const sampleFixtureId = 'notFound'
 
@@ -398,7 +596,15 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                     })
                 })
 
+                /**
+                 * ✅ Test suite for success scenarios
+                 * @description Tests successful execution of getFixture method
+                 */
                 describe('[SUCCESS]', () => {
+                    /**
+                     * 🧪 Test case: Retrieving an existing fixture
+                     * @description Verifies that an existing fixture is correctly retrieved
+                     */
                     it('should return the fixture object', () => {
                         const fixture = fixturesManager.getFixture(docId)
                         expect(fixture).toEqual(fixturesDoc)
@@ -406,13 +612,29 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                 })
             })
 
+            /**
+             * 🧹 Test suite for cleaning operations
+             * @description This describe block contains tests for cleaning fixtures
+             */
             describe('[CLEANING]', () => {
+                /**
+                 * 🔧 Stub for MongoDB server operations
+                 * @type {sinon.SinonStub}
+                 */
                 let mongoServerStub: sinon.SinonStub
+
+                /**
+                 * 🕵️ Spy for Promise.all method
+                 * @type {sinon.SinonSpy}
+                 */
                 let promiseAllSpy: sinon.SinonSpy
 
+                /**
+                 * 🔄 Setup before each test
+                 * @description Initializes stubs and spies, and sets up mock MongoDB servers for fixtures
+                 */
                 beforeEach(() => {
                     promiseAllSpy = sinon.spy(Promise, 'all')
-
                     mongoServerStub = sinon.stub()
 
                     Reflect.set(fixturesManager.fixtures[dbName][collectionName][docId], 'mongoServer', {
@@ -424,61 +646,78 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                     })
                 })
 
+                /**
+                 * 🧼 Test suite for the clean() method
+                 * @description Contains tests for cleaning specific fixtures
+                 */
                 describe('clean()', () => {
+                    /**
+                     * 🎯 Test suite for cleaning a specific fixture
+                     * @description Tests the removal of a single, specific fixture
+                     */
                     describe('[SPECIFIC FIXTURE]', () => {
+                        /**
+                         * ✅ Test case: Cleaning up a specific fixture
+                         * @description Verifies that a single fixture is removed correctly
+                         * @returns {Promise<void>}
+                         */
                         it('should clean up specific fixture', async() => {
-                            // Check if the fixture is there
                             expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(fixturesDoc)
                             expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
 
                             await fixturesManager.clean([docId])
 
-                            // ==== EXPECTATIONS ====
-                            // Check if the specified fixture is removed
                             expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(undefined)
-                            // Check if second fixture is still there
                             expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
 
-                            // ==== SPIES/STUBS ====
                             expect(mongoServerStub.calledOnce).toBe(true)
                             expect(promiseAllSpy.calledOnce).toBe(true)
                         })
                     })
 
+                    /**
+                     * 🔢 Test suite for cleaning multiple fixtures
+                     * @description Tests the removal of multiple fixtures simultaneously
+                     */
                     describe('[MULTIPLE FIXTURES]', () => {
+                        /**
+                         * ✅ Test case: Cleaning up multiple fixtures
+                         * @description Verifies that multiple fixtures are removed correctly
+                         * @returns {Promise<void>}
+                         */
                         it('should clean up multiple fixtures', async() => {
-                            // Check if the fixture is there
                             expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(fixturesDoc)
                             expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
 
                             await fixturesManager.clean([docId, docId2])
 
-                            // ==== EXPECTATIONS ====
-                            // Check if the specified fixture is removed
                             expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(undefined)
-                            // Check if second fixture is still there
                             expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(undefined)
 
-                            // ==== SPIES/STUBS ====
                             expect(mongoServerStub.calledTwice).toBe(true)
                             expect(promiseAllSpy.calledOnce).toBe(true)
                         })
                     })
                 })
 
+                /**
+                 * 🧹 Test suite for the cleanAll() method
+                 * @description Contains tests for cleaning all fixtures
+                 */
                 describe('cleanAll()', () => {
+                    /**
+                     * ✅ Test case: Cleaning up all fixtures
+                     * @description Verifies that all fixtures are removed and the fixtures object is reset
+                     * @returns {Promise<void>}
+                     */
                     it('should clean up all the fixtures and restore this.fixturees', async() => {
-                        // Check if the fixture is there
                         expect(fixturesManager.fixtures[dbName][collectionName][docId]).toEqual(fixturesDoc)
                         expect(fixturesManager.fixtures[dbName][collectionName][docId2]).toEqual(fixturesDoc2)
 
                         await fixturesManager.cleanAll()
-  
-                        // ==== EXPECTATIONS ====
-                        // Check if the specified fixture is removed
+
                         expect(fixturesManager.fixtures).toEqual({})
 
-                        // ==== SPIES/STUBS ====
                         expect(mongoServerStub.calledTwice).toBe(true)
                         expect(promiseAllSpy.calledOnce).toBe(true)
                     })
