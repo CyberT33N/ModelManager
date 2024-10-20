@@ -146,23 +146,23 @@ const models = modelManager.getModels()
 - Create a new mongoose model and push it to the instance
 ```typescript
 /**
- * @template TMongooseSchema - The schema type.
+ * @template IMongooseSchema - The schema type.
  * @param {IModelCore} modelDetails - Object containing details for creating the model.
  * @param {string} modelDetails.modelName - The name of the model being created. 
  *    This will be used as the identifier within the application and MongoDB collection.
- * @param {mongoose.Schema<TMongooseSchema>} modelDetails.schema - The Mongoose schema defining the structure
+ * @param {mongoose.Schema<IMongooseSchema>} modelDetails.schema - The Mongoose schema defining the structure
  *    and validation rules for the model. It dictates how documents in the collection will be structured.
  * @param {string} modelDetails.dbName - The name of the database where the model will be stored.
  *    This is essential for multi-tenant applications or cases where multiple databases are managed.
  * 
- * @returns {Promise<mongoose.Model<TMongooseSchema>>} The created Mongoose model.
+ * @returns {Promise<mongoose.Model<IMongooseSchema>>} The created Mongoose model.
  * 
  */
-public async createModel<TMongooseSchema>({
+public async createModel<IMongooseSchema>({
     modelName,
     schema,
     dbName
-}: IModelCore): Promise<mongoose.Model<TMongooseSchema>>
+}: IModelCore): Promise<mongoose.Model<IMongooseSchema>>
 
 ```
 ```typescript
@@ -224,13 +224,13 @@ The **Model Utils** class specializes at the moment in creating in-memory models
 - Creates an in-memory Mongoose model, connecting it to an in-memory MongoDB instance. This is particularly useful for unit/integration testing without needing to spin up a real MongoDB server
 ```typescript
 /**
- * @template TMongooseSchema - The TypeScript type representing the Mongoose schema.
+ * @template IMongooseSchema - The TypeScript type representing the Mongoose schema.
  * @param {IModelCore} modelCoreDetails - The core model details including schema and model name.
- * @returns {Promise<IMemoryModel<TMongooseSchema>>} - Promise resolving to an in-memory model with its connection.
+ * @returns {Promise<IMemoryModel<IMongooseSchema>>} - Promise resolving to an in-memory model with its connection.
  */
-public static async createMemoryModel<TMongooseSchema>(
+public static async createMemoryModel<IMongooseSchema>(
     modelCoreDetails: IModelCore
-): Promise<IMemoryModel<TMongooseSchema>>
+): Promise<IMemoryModel<IMongooseSchema>>
 ```
 
 ```typescript
@@ -358,17 +358,17 @@ const conn = await mongooseUtils.getConnection()
 - Creates a new Mongoose schema for a model.
 ```typescript
 **
-* @template TMongooseSchema - Interface representing the Mongoose schema.
+* @template IMongooseSchema - Interface representing the Mongoose schema.
 * @param {mongoose.SchemaDefinition} schema - The schema definition for the model.
 * @param {mongoose.SchemaOptions<any>} options - Schema options such as timestamps or collection name.
-* @returns {mongoose.Schema<TMongooseSchema>} The constructed Mongoose schema.
+* @returns {mongoose.Schema<IMongooseSchema>} The constructed Mongoose schema.
 * 
 * @see https://mongoosejs.com/docs/guide.html#options for options.
 */
-public static createSchema<TMongooseSchema>(
+public static createSchema<IMongooseSchema>(
     schema: mongoose.SchemaDefinition,
     options: mongoose.SchemaOptions<any>
-): mongoose.Schema<TMongooseSchema>
+): mongoose.Schema<IMongooseSchema>
 ```
 
 ```typescript
@@ -402,15 +402,15 @@ const model = await MongooseUtils.createSchema<IUser>(
 
 ```typescript
 /**
- * @template TMongooseSchema - Interface representing the schema definition.
+ * @template IMongooseSchema - Interface representing the schema definition.
  * @param {mongoose.SchemaDefinition} schema - The schema to define the model.
  * @param {string} modelName - The name of the model and corresponding MongoDB collection.
- * @returns {Promise<mongoose.Model<TMongooseSchema>>} The initialized Mongoose model.
+ * @returns {Promise<mongoose.Model<IMongooseSchema>>} The initialized Mongoose model.
  */
-public async createModel<TMongooseSchema>(
+public async createModel<IMongooseSchema>(
     schema: mongoose.SchemaDefinition,
     modelName: string
-): Promise<mongoose.Model<TMongooseSchema>>
+): Promise<mongoose.Model<IMongooseSchema>>
 ```
 ```typescript
 import { MongooseUtils } from 'mongoose-model-manager'

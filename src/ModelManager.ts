@@ -124,11 +124,11 @@ export default class ModelManager {
      * ➕ Adds a new Mongoose model to the collection.
      * Throws an error if the model name already exists.
      * @private
-     * @template TMongooseSchema - The schema type.
-     * @param {IModel<TMongooseSchema>} modelDetails - Details of the model.
+     * @template IMongooseSchema - The schema type.
+     * @param {IModel<IMongooseSchema>} modelDetails - Details of the model.
      * @throws {ValidationError} If the model already exists.
      */
-    private pushModel<TMongooseSchema>(modelDetails: IModel<TMongooseSchema>): void {
+    private pushModel<IMongooseSchema>(modelDetails: IModel<IMongooseSchema>): void {
         // 🛑 Check for existing model
         const existingModel = this.models.find(model => model.modelName === modelDetails.modelName)
 
@@ -173,30 +173,29 @@ export default class ModelManager {
     /**
       * 🏗️ Creates a new Mongoose model.
       * @public
-      * @template TMongooseSchema - The schema type.
+      * @template IMongooseSchema - The schema type.
       * @param {IModelCore} modelDetails - Object containing details for creating the model.
       * @param {string} modelDetails.modelName - The name of the model being created. 
       *    This will be used as the identifier within the application and MongoDB collection.
-      * @param {mongoose.Schema<TMongooseSchema>} modelDetails.schema - The Mongoose schema defining the structure
+      * @param {mongoose.Schema<IMongooseSchema>} modelDetails.schema - The Mongoose schema defining the structure
       *    and validation rules for the model. It dictates how documents in the collection will be structured.
       * @param {string} modelDetails.dbName - The name of the database where the model will be stored.
       *    This is essential for multi-tenant applications or cases where multiple databases are managed.
-      * 
-      * @returns {Promise<mongoose.Model<TMongooseSchema>>} The created Mongoose model.
+      * @returns {Promise<mongoose.Model<IMongooseSchema>>} The created Mongoose model.
       * 
      */
-    public async createModel<TMongooseSchema>({
+    public async createModel<IMongooseSchema>({
         modelName,
         schema,
         dbName
-    }: IModelCore): Promise<mongoose.Model<TMongooseSchema>> {
+    }: IModelCore): Promise<mongoose.Model<IMongooseSchema>> {
         const mongooseUtils = MongooseUtils.getInstance(dbName)
-        const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
+        const Model = await mongooseUtils.createModel<IMongooseSchema>(schema, modelName)
 
         // 🧩 Ensure indexes are created for the model
         await Model.createIndexes()
 
-        this.pushModel<TMongooseSchema>({
+        this.pushModel<IMongooseSchema>({
             modelName,
             Model,
             dbName,
