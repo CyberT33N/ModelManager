@@ -61,19 +61,19 @@ class MongooseUtils {
      * 🛠️ Creates a new Mongoose schema for a model.
      * 
      * @static
-     * @template TMongooseSchema - Interface representing the Mongoose schema.
+     * @template IMongooseSchema - Interface representing the Mongoose schema.
      * @param {mongoose.SchemaDefinition} schema - The schema definition for the model.
      * @param {mongoose.SchemaOptions<any>} options - Schema options such as timestamps or collection name.
-     * @returns {mongoose.Schema<TMongooseSchema>} The constructed Mongoose schema.
+     * @returns {mongoose.Schema<IMongooseSchema>} The constructed Mongoose schema.
      * 
      * @see https://mongoosejs.com/docs/guide.html#options for options.
      */
-    public static createSchema<TMongooseSchema>(
+    public static createSchema<IMongooseSchema>(
         schema: mongoose.SchemaDefinition,
         options: mongoose.SchemaOptions<any>
-    ): mongoose.Schema<TMongooseSchema> {
+    ): mongoose.Schema<IMongooseSchema> {
         // 📜 Creating new Mongoose schema with provided schema and options
-        const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema, options)
+        const mongooseSchema = new mongoose.Schema<IMongooseSchema>(schema, options)
         return mongooseSchema
     }
 
@@ -96,7 +96,6 @@ class MongooseUtils {
             // 🔌 Creating a connection to MongoDB and storing the result in `this.conn`
             this.conn = await mongoose.createConnection(this.connectionString).asPromise()
         } catch (e) {
-            // 💥 Throwing error if MongoDB connection initialization fails
             throw new BaseError(
                 '[ModelManager] - Error while initializing connection with MongoDB',
                 e as Error
@@ -141,17 +140,17 @@ class MongooseUtils {
      * 
      * This method connects to the database, defines a schema, and initializes a model.
      * 
-     * @template TMongooseSchema - Interface representing the schema definition.
+     * @template IMongooseSchema - Interface representing the schema definition.
      * @param {mongoose.SchemaDefinition} schema - The schema to define the model.
      * @param {string} modelName - The name of the model and corresponding MongoDB collection.
-     * @returns {Promise<mongoose.Model<TMongooseSchema>>} The initialized Mongoose model.
+     * @returns {Promise<mongoose.Model<IMongooseSchema>>} The initialized Mongoose model.
      */
-    public async createModel<TMongooseSchema>(
+    public async createModel<IMongooseSchema>(
         schema: mongoose.SchemaDefinition,
         modelName: string
-    ): Promise<mongoose.Model<TMongooseSchema>> {
+    ): Promise<mongoose.Model<IMongooseSchema>> {
         // 🏗️ Creating a schema with the provided definition and setting collection name
-        const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, {
+        const mongooseSchema = MongooseUtils.createSchema<IMongooseSchema>(schema, {
             collection: modelName
         })
         
@@ -159,7 +158,7 @@ class MongooseUtils {
         const conn = await this.getConnection()
 
         // 🔨 Defining the Mongoose model and linking it to the collection
-        const model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
+        const model = conn.model<IMongooseSchema>(modelName, mongooseSchema, modelName)
         return model
     }
 }

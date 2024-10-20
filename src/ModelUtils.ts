@@ -55,18 +55,18 @@ export default class ModelUtils {
      * to spin up a real MongoDB server.
      *
      * @static
-     * @template TMongooseSchema - The TypeScript type representing the Mongoose schema.
+     * @template IMongooseSchema - The TypeScript type representing the Mongoose schema.
      * @param {IModelCore} modelCoreDetails - The core model details including schema and model name.
-     * @returns {Promise<IMemoryModel<TMongooseSchema>>} - Promise resolving to an in-memory model with its connection.
+     * @returns {Promise<IMemoryModel<IMongooseSchema>>} - Promise resolving to an in-memory model with its connection.
      */
-    public static async createMemoryModel<TMongooseSchema>(
+    public static async createMemoryModel<IMongooseSchema>(
         modelCoreDetails: IModelCore
-    ): Promise<IMemoryModel<TMongooseSchema>> {
+    ): Promise<IMemoryModel<IMongooseSchema>> {
         // 🗂 Destructure necessary properties from the modelCoreDetails object
         const { dbName, schema, modelName } = modelCoreDetails
 
         // 🧱 Build the Mongoose schema using a utility method (MongooseUtils) and the provided schema definition
-        const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, {
+        const mongooseSchema = MongooseUtils.createSchema<IMongooseSchema>(schema, {
             collection: modelName
         })
 
@@ -81,13 +81,13 @@ export default class ModelUtils {
             .asPromise()
 
         // 🛠️ Create the Mongoose model, using the generated schema, model name, and connection
-        const Model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
+        const Model = conn.model<IMongooseSchema>(modelName, mongooseSchema, modelName)
 
         // 🔍 Extract the URI of the in-memory MongoDB for logging or debugging purposes
         const mongoUri = mongoServer.getUri()
 
         // 🏗️ Return a structured object containing all the necessary components of the in-memory model setup
-        const memoryModel: IMemoryModel<TMongooseSchema> = {
+        const memoryModel: IMemoryModel<IMongooseSchema> = {
             Model, mongoServer, conn, mongoUri
         }
 
