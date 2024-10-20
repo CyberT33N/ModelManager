@@ -216,7 +216,7 @@ The **Model Utils** class specializes at the moment in creating in-memory models
 
 <br>
 
-## Methods 📜
+# Methods 📜
 
 <br>
 
