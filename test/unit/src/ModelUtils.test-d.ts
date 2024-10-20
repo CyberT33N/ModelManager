@@ -25,6 +25,7 @@ import type { IModel } from '@/src/ModelManager'
 
 // ==== CODE TO TEST ====
 import ModelUtils, { type IMemoryModel } from '@/src/ModelUtils'
+import type { IMongooseSchema } from '@/test/models/Test.model.ts'
 
 describe('[TYPE TEST] - src/ModelUtils.ts', () => {
     let modelDetails: IModel<any>
@@ -47,10 +48,8 @@ describe('[TYPE TEST] - src/ModelUtils.ts', () => {
     describe('[INTERFACES]', () => {
         describe('[IMemoryModel]', () => {
             it('should verify interface type', () => {
-                type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelDetails.schema>
-
-                expectTypeOf<IMemoryModel<TMongooseSchema>>()
-                    .toEqualTypeOf<IMemoryModel_Test<TMongooseSchema>>()
+                expectTypeOf<IMemoryModel<IMongooseSchema>>()
+                    .toEqualTypeOf<IMemoryModel_Test<IMongooseSchema>>()
             })
         })
     })
@@ -59,16 +58,14 @@ describe('[TYPE TEST] - src/ModelUtils.ts', () => {
         describe('[STATIC]', () => {
             describe('createMemoryModel()', () => {
                 it('should verify param and return type', () => {
-                     type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelDetails.schema>
+                    expectTypeOf(
+                        ModelUtils.createMemoryModel.bind(ModelUtils)
+                    ).toBeCallableWith(modelDetails)
 
-                     expectTypeOf(
-                         ModelUtils.createMemoryModel.bind(ModelUtils)
-                     ).toBeCallableWith(modelDetails)
-
-                     expectTypeOf(
-                        ModelUtils.createMemoryModel.bind(ModelUtils)<TMongooseSchema>
-                     ).returns.resolves
-                         .toEqualTypeOf<IMemoryModel<TMongooseSchema>>()
+                    expectTypeOf(
+                        ModelUtils.createMemoryModel.bind(ModelUtils)<IMongooseSchema>
+                    ).returns.resolves
+                        .toEqualTypeOf<IMemoryModel<IMongooseSchema>>()
                 })
             })
         })

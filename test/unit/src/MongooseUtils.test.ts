@@ -34,6 +34,7 @@ import type { IMemoryModel } from '@/src/ModelUtils'
 
 // ==== CODE TO TEST ====
 import MongooseUtils from '@/src/MongooseUtils'
+import type { IMongooseSchema } from '@/test/models/Test.model.ts'
 
 describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
     let mongooseUtils: MongooseUtils
@@ -102,10 +103,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                 it('should create a mongoose schema', () => {
                     const { modelName, schema } = modelDetails
 
-                    // Generate the Mongoose schema type
-                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-                
-                    const mongooseSchema = MongooseUtils.createSchema<TMongooseSchema>(schema, {
+                    const mongooseSchema = MongooseUtils.createSchema<IMongooseSchema>(schema, {
                         collection: modelName
                     })
 
@@ -181,10 +179,9 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                         const { modelName, schema } = modelDetails
                         
                         // Create a model using the connection
-                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-                        const mongooseSchema = new mongoose.Schema<TMongooseSchema>(schema)
+                        const mongooseSchema = new mongoose.Schema<IMongooseSchema>(schema)
 
-                        const Model = conn.model<TMongooseSchema>(modelName, mongooseSchema, modelName)
+                        const Model = conn.model<IMongooseSchema>(modelName, mongooseSchema, modelName)
 
                         // Test if the created connection model is working
                         const doc = new Model(docData)
@@ -265,8 +262,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                     it('should validate schema and should not allow to create doc', async() => {
                         const { modelName, schema } = modelDetails
                     
-                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-                        const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
+                        const Model = await mongooseUtils.createModel<IMongooseSchema>(schema, modelName)
 
                         // Should throw an error when trying to create a document
                         try {
@@ -290,8 +286,7 @@ describe('[UNIT TEST] - src/MongooseUtils.ts', () => {
                     it('should create a mongoose model', async() => {
                         const { modelName, schema } = modelDetails
                     
-                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-                        const Model = await mongooseUtils.createModel<TMongooseSchema>(schema, modelName)
+                        const Model = await mongooseUtils.createModel<IMongooseSchema>(schema, modelName)
 
                         // ==== SPIES ====
                         expect(createSchemaStub.calledOnceWithExactly(

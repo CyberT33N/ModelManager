@@ -27,6 +27,7 @@ import type { IModel } from '@/src/ModelManager'
 
 // ==== CODE TO TEST ====
 import MongooseUtils from '@/src/MongooseUtils'
+import type { IMongooseSchema } from '@/test/models/Test.model.ts'
 
 describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
     let mongooseUtils: MongooseUtils
@@ -58,17 +59,14 @@ describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
                 it('should verify param and return type', () => {
                     const { modelName, schema } = modelDetails
 
-                    // Generate the Mongoose schema type
-                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-                
                     expectTypeOf(
                         MongooseUtils.createSchema.bind(MongooseUtils)
                     ).toBeCallableWith(schema, { collection: modelName })
 
                     expectTypeOf(
-                        MongooseUtils.createSchema.bind(MongooseUtils)<TMongooseSchema>
+                        MongooseUtils.createSchema.bind(MongooseUtils)<IMongooseSchema>
                     ).returns
-                        .toEqualTypeOf<mongoose.Schema<TMongooseSchema>>()
+                        .toEqualTypeOf<mongoose.Schema<IMongooseSchema>>()
                 })
             })
         })
@@ -99,17 +97,14 @@ describe('[TYPE TEST] - src/MongooseUtils.ts', () => {
                 it('should verify param and return type', () => {
                     const { modelName, schema } = modelDetails
 
-                    // Generate the Mongoose schema type
-                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-                
                     expectTypeOf(
                         mongooseUtils.createModel.bind(mongooseUtils)
                     ).toBeCallableWith(schema, modelName)
 
                     expectTypeOf(
-                        mongooseUtils.createModel.bind(mongooseUtils)<TMongooseSchema>
+                        mongooseUtils.createModel.bind(mongooseUtils)<IMongooseSchema>
                     ).returns.resolves
-                        .toEqualTypeOf<mongoose.Model<TMongooseSchema>>()
+                        .toEqualTypeOf<mongoose.Model<IMongooseSchema>>()
                 })
             })
         })

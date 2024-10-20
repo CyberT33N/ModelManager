@@ -206,15 +206,14 @@ class FixturesManager {
                         if ('docContents' in fixture) {
                             // Retrieve Mongoose model for the collection
                             const { schema } = this.modelManager.getModel(collectionName)
-                            type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
 
                             // Create the in-memory model and insert the fixture
-                            const { Model, mongoServer } = await ModelUtils.createMemoryModel<TMongooseSchema>({
+                            const { Model, mongoServer } = await ModelUtils.createMemoryModel({
                                 dbName, modelName: collectionName, schema
                             })
 
                             // Insert the fixture document data
-                            await Model.create<TMongooseSchema>(fixture.docContents)
+                            await Model.create(fixture.docContents)
 
                             // Fetch the document in lean and full forms
                             const docLean = await Model.findOne({ _id: id }).lean()

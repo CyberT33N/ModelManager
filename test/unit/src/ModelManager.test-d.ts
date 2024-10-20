@@ -27,6 +27,8 @@ import ModelManager, {
     type IModel, type IModelCore
 } from '@/src/ModelManager'
 
+import type { IMongooseSchema } from '@/test/models/Test.model.ts'
+
 describe('[TYPE TEST] - src/ModelManager.ts', () => {
     let modelManager: ModelManager
     // Must be set because we only use it as type here
@@ -71,10 +73,8 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
 
         describe('IModel', () => {
             it('should verify interface type', () => {
-                type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelDetails.schema>
-
-                expectTypeOf<IModel<TMongooseSchema>>()
-                    .toEqualTypeOf<IModel_Test<TMongooseSchema>>()
+                expectTypeOf<IModel<IMongooseSchema>>()
+                    .toEqualTypeOf<IModel_Test<IMongooseSchema>>()
             })
         })
     })
@@ -106,11 +106,9 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
 
             describe('pushModel()', () => {
                 it('should verify parameter and return type', () => {
-                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelDetails.schema>
-
                     expectTypeOf(
-                        modelManager['pushModel']<TMongooseSchema>
-                    ).parameter(0).toEqualTypeOf<IModel<TMongooseSchema>>()
+                        modelManager['pushModel']<IMongooseSchema>
+                    ).parameter(0).toEqualTypeOf<IModel<IMongooseSchema>>()
 
                     expectTypeOf(modelManager['pushModel']).returns.toBeVoid()
                 })
@@ -135,15 +133,13 @@ describe('[TYPE TEST] - src/ModelManager.ts', () => {
 
             describe('createModel()', () => {
                 it('should verify parameter and return type', () => {
-                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelDetails.schema>
-
                     expectTypeOf(
-                        modelManager.createModel.bind(modelManager)<TMongooseSchema>
+                        modelManager.createModel.bind(modelManager)<IMongooseSchema>
                     ).parameter(0).toEqualTypeOf<IModelCore>()
 
                     expectTypeOf(
-                        modelManager.createModel.bind(modelManager)<TMongooseSchema>
-                    ).returns.resolves.toEqualTypeOf<mongoose.Model<TMongooseSchema>>()
+                        modelManager.createModel.bind(modelManager)<IMongooseSchema>
+                    ).returns.resolves.toEqualTypeOf<mongoose.Model<IMongooseSchema>>()
                 })
             })
         })

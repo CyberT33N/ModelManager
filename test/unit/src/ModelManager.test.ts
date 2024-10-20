@@ -15,7 +15,6 @@
 
 // ==== DEPENDENCIES ====
 import sinon from 'sinon'
-import mongoose from 'mongoose'
 import { ValidationError, ResourceNotFoundError } from 'error-manager-helper'
 import {
     describe, it, expect, assert,
@@ -28,6 +27,7 @@ import MongooseUtils from '@/src/MongooseUtils'
 
 // ==== CODE TO TEST ====
 import ModelManager, { type IModel } from '@/src/ModelManager'
+import type { IMongooseSchema } from '@/test/models/Test.model.ts'
 
 describe('[UNIT TEST] - src/ModelManager.ts', () => {
     let modelManager: ModelManager
@@ -213,8 +213,7 @@ describe('[UNIT TEST] - src/ModelManager.ts', () => {
                 it('should create a new mongoose model and call createIndexes()', async() => {
                     const { modelName, schema, dbName, Model } = modelDetails
 
-                    type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-                    const createdModel = await modelManager.createModel<TMongooseSchema>({
+                    const createdModel = await modelManager.createModel<IMongooseSchema>({
                         modelName, schema, dbName
                     })
             

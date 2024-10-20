@@ -106,10 +106,7 @@ export default class ModelManager {
             const modelCoreDetail = await import(/* webpackIgnore: true */ path) as IModelCore
             const { modelName, dbName, schema } = modelCoreDetail
 
-            // 🏗️ Generate Mongoose schema type
-            type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
-
-            const Model = await this.createModel<TMongooseSchema>({ modelName, schema, dbName })
+            const Model = await this.createModel({ modelName, schema, dbName })
             console.log('[ModelManager] - Loaded Model:', modelName)
 
             modelDetails.push({

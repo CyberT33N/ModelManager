@@ -28,6 +28,7 @@ import type { IModel } from '@/src/ModelManager'
 
 // ==== CODE TO TEST ====
 import ModelUtils from '@/src/ModelUtils'
+import type { IMongooseSchema } from '@/test/models/Test.model.ts'
 
 describe('[UNIT TEST] - src/ModelUtils.ts', () => {
     let mongooseSchema: mongoose.Schema
@@ -56,11 +57,8 @@ describe('[UNIT TEST] - src/ModelUtils.ts', () => {
 
                 describe('[ERROR]', () => {
                     it('should validate schema and should not allow to create doc', async() => { 
-                        // Generate the Mongoose schema type
-                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof modelDetails.schema>
-
                         const { Model } = await ModelUtils
-                            .createMemoryModel<TMongooseSchema>(modelDetails)
+                            .createMemoryModel<IMongooseSchema>(modelDetails)
 
                         try {
                             const doc = new Model({ notValid: true })
@@ -82,13 +80,10 @@ describe('[UNIT TEST] - src/ModelUtils.ts', () => {
                 describe('[SUCCESS]', () => {
                     it('should return the memory model, server and conn', async() => {
                         const { schema, modelName, dbName } = modelDetails
-                         
-                        // Generate the Mongoose schema type
-                        type TMongooseSchema = mongoose.ObtainDocumentType<typeof schema>
 
                         const {
                             Model, mongoServer, conn
-                        } = await ModelUtils.createMemoryModel<TMongooseSchema>(modelDetails)
+                        } = await ModelUtils.createMemoryModel<IMongooseSchema>(modelDetails)
 
                         // ==== SPIES/STUBS ====
                         expect(mongooseUtilsCreateSchemaStub.calledOnceWithExactly(
