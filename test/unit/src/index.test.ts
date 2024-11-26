@@ -20,7 +20,8 @@ import { describe, it, expect } from 'vitest'
 import {
     ModelManager,
     MongooseUtils,
-    ModelUtils
+    ModelUtils,
+    FixturesManager
 } from '@/src/index'
 
 /**
@@ -51,6 +52,13 @@ describe('[UNIT TEST] - src/index.ts', () => {
          */
         it('should have ModelUtils class', () => {
             expect(ModelUtils).toBeDefined()
+        })
+
+        /**
+         * ✅ Ensures the FixturesManager class is available in the exports.
+         */
+        it('should have FixturesManager class', () => {
+            expect(FixturesManager).toBeDefined()
         })
     })
 })

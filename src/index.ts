@@ -23,6 +23,11 @@ export {
 } from './MongooseUtils'
 
 export {
+    default as FixturesManager,
+    type IFixtureDoc, type IFixtureInserted, type IFixture, type IFixtures
+} from './FixturesManager'
+
+export {
     default as ModelUtils,
     type IMemoryModel
 } from './ModelUtils'
