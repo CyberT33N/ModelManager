@@ -68,21 +68,26 @@ describe('[TYPE TEST] - src/FixturesManager.ts', () => {
         /**
          * 📦 Represents an inserted fixture containing both the original document
          * and its lean (plain object) version, along with the Mongoose model reference.
-         * 
          * @interface IFixtureInserted
-         * @property {(mongoose.Document<unknown> & Required<{ _id: unknown }>) | null} doc - 
-         *    The inserted Mongoose document instance, or null if not available.
-         * @property {(mongoose.FlattenMaps<unknown> & Required<{ _id: unknown }>) | null} docLean - 
-         *    The lean version of the inserted document, or null if not available.
-         * @property {{ [x: string]: any } & Required<{ _id: unknown }> | undefined} docToObject - 
-         *    Plain JavaScript object representation of the inserted document.
+         * 
+         * @template TSchema - The type of the document schema used by the model.
+         * 
+         * @property {(mongoose.Document<TSchema> & Required<{ _id: unknown }>} doc
+         * - The inserted Mongoose document instance
+         * 
+         * @property {(mongoose.FlattenMaps<TSchema> & Required<{ _id: unknown }>} docLean
+         * - The lean version of the inserted document
+         * 
+         * @property {{ [x: string]: any } & Required<{ _id: unknown }>} docToObject
+         * - Plain JavaScript object representation of the inserted document.
+         * 
          * @property {mongoose.Model<any>} Model - Reference to the Mongoose model used for the insertion.
          * @property {MongoMemoryServer} mongoServer - Instance of the in-memory MongoDB server used.
          */
-        interface IFixtureInserted_Test {
-            doc: (mongoose.Document<unknown> & Required<{ _id: unknown; }>)
-            docLean: (mongoose.FlattenMaps<unknown> & Required<{ _id: unknown; }>)
-            docToObject: ({ [x: string]: any; } & Required<{ _id: unknown; }>)
+        interface IFixtureInserted_Test<TSchema = any> {
+            doc: (mongoose.Document<TSchema> & Required<{ _id: unknown; }>)
+            docLean: (mongoose.FlattenMaps<TSchema> & Required<{ _id: unknown; }>)
+            docToObject: (TSchema & Required<{ _id: unknown; }>)
             Model: mongoose.Model<any>
             mongoServer: MongoMemoryServer
         }
