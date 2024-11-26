@@ -1,3 +1,17 @@
+# [2.0.0](https://github.com/CyberT33N/ModelManager/compare/v1.8.0...v2.0.0) (2024-11-26)
+
+
+### Features
+
+* Changed fixtures file type from .ts to .mjs ([b04ac82](https://github.com/CyberT33N/ModelManager/commit/b04ac828be1cdc74e94bbba866c29102c5805704))
+
+
+### BREAKING CHANGES
+
+* changed fixtures file type
+
+
+
 # [1.8.0](https://github.com/CyberT33N/ModelManager/compare/v1.7.0...v1.8.0) (2024-11-26)
 
 
@@ -32,15 +46,6 @@
 ### Features
 
 * **CCS-001:** Added FixtureManager ([f130e54](https://github.com/CyberT33N/ModelManager/commit/f130e54dad3540f91caa710c6c90c934e25237c0))
-
-
-
-# [1.4.0](https://github.com/CyberT33N/ModelManager/compare/v1.3.0...v1.4.0) (2024-10-12)
-
-
-### Features
-
-* **CCS-001:** moved mongodb-memory-server to dependencies ([a91ed95](https://github.com/CyberT33N/ModelManager/commit/a91ed95cd52bd70c84e3a3117983c2189ce459e1))
 
 
 
