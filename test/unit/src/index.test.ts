@@ -21,7 +21,8 @@ import {
     ModelManager,
     MongooseUtils,
     ModelUtils,
-    FixturesManager
+    FixturesManager,
+    MongoMemoryServer
 } from '@/src/index'
 
 /**
@@ -54,11 +55,17 @@ describe('[UNIT TEST] - src/index.ts', () => {
             expect(ModelUtils).toBeDefined()
         })
 
-        /**
-         * ✅ Ensures the FixturesManager class is available in the exports.
-         */
-        it('should have FixturesManager class', () => {
-            expect(FixturesManager).toBeDefined()
+        describe('[FixturesManager]', () => {
+            /**
+             * ✅ Ensures the FixturesManager class is available in the exports.
+             */
+            it('should have FixturesManager class', () => {
+                expect(FixturesManager).toBeDefined()
+            })
+
+            it('should have MongoMemoryServer export', () => {
+                expect(MongoMemoryServer).toBeDefined()
+            })
         })
     })
 })

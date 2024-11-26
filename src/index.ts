@@ -29,5 +29,6 @@ export {
 
 export {
     default as ModelUtils,
+    MongoMemoryServer,
     type IMemoryModel
 } from './ModelUtils'

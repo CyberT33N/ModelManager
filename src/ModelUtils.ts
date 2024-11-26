@@ -14,7 +14,10 @@
 */
 
 // ==== DEPENDENCIES ====
-import { MongoMemoryServer } from 'mongodb-memory-server' // 🍃 Simulates an in-memory MongoDB server for testing
+// 🍃 Simulates an in-memory MongoDB server for testing
+import { MongoMemoryServer } from 'mongodb-memory-server'
+export { MongoMemoryServer }
+
 import mongoose from 'mongoose'
 
 // ==== INTERNAL ====
