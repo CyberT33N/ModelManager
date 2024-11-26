@@ -1,3 +1,12 @@
+# [2.3.0](https://github.com/CyberT33N/ModelManager/compare/v2.2.0...v2.3.0) (2024-11-26)
+
+
+### Features
+
+* **CCS-001:** changed interface IFixtureInserted ([1df62c6](https://github.com/CyberT33N/ModelManager/commit/1df62c601533dbfe318e65c85771e3f968de44df))
+
+
+
 # [2.2.0](https://github.com/CyberT33N/ModelManager/compare/v2.1.0...v2.2.0) (2024-11-26)
 
 
@@ -36,15 +45,6 @@
 ### Features
 
 * **CCS-001:** added MongoMemoryServer to idnex export ([4c13897](https://github.com/CyberT33N/ModelManager/commit/4c13897b813d052070e71273877953e334728007))
-
-
-
-# [1.7.0](https://github.com/CyberT33N/ModelManager/compare/v1.6.0...v1.7.0) (2024-11-26)
-
-
-### Features
-
-* **CCS-001:** added FixturesManager to index exports ([e97e22d](https://github.com/CyberT33N/ModelManager/commit/e97e22dfa2d752be5984fb1b72531ba9fe915711))
 
 
 
