@@ -1,3 +1,12 @@
+# [1.8.0](https://github.com/CyberT33N/ModelManager/compare/v1.7.0...v1.8.0) (2024-11-26)
+
+
+### Features
+
+* **CCS-001:** added MongoMemoryServer to idnex export ([4c13897](https://github.com/CyberT33N/ModelManager/commit/4c13897b813d052070e71273877953e334728007))
+
+
+
 # [1.7.0](https://github.com/CyberT33N/ModelManager/compare/v1.6.0...v1.7.0) (2024-11-26)
 
 
@@ -32,15 +41,6 @@
 ### Features
 
 * **CCS-001:** moved mongodb-memory-server to dependencies ([a91ed95](https://github.com/CyberT33N/ModelManager/commit/a91ed95cd52bd70c84e3a3117983c2189ce459e1))
-
-
-
-# [1.3.0](https://github.com/CyberT33N/ModelManager/compare/v1.2.0...v1.3.0) (2024-10-12)
-
-
-### Features
-
-* **CCS-001:** find type test for .getModel() ([4cd2ba3](https://github.com/CyberT33N/ModelManager/commit/4cd2ba3be2933d5112d93991bae94d9c60d7e3e4))
 
 
 
