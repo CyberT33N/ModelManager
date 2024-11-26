@@ -48,24 +48,22 @@ export interface IFixtureDoc {
  * and its lean (plain object) version, along with the Mongoose model reference.
  * @interface IFixtureInserted
  * 
- * @template TSchema - The type of the document schema used by the model.
- * 
- * @property {(mongoose.Document<TSchema> & Required<{ _id: unknown }>} doc
+ * @property {(mongoose.Document<any> & Required<{ _id: unknown; }>)} doc
  * - The inserted Mongoose document instance
  * 
- * @property {(mongoose.FlattenMaps<TSchema> & Required<{ _id: unknown }>} docLean
+ * @property {(mongoose.FlattenMaps<any> & Required<{ _id: unknown; }>)} docLean
  * - The lean version of the inserted document
  * 
- * @property {{ [x: string]: any } & Required<{ _id: unknown }>} docToObject
+ * @property {({ [x: string]: any; } & Required<{ _id: unknown; }>)} docToObject
  * - Plain JavaScript object representation of the inserted document.
  * 
  * @property {mongoose.Model<any>} Model - Reference to the Mongoose model used for the insertion.
  * @property {MongoMemoryServer} mongoServer - Instance of the in-memory MongoDB server used.
  */
-export interface IFixtureInserted<TSchema = any> {
-    doc: (mongoose.Document<TSchema> & Required<{ _id: unknown; }>)
-    docLean: (mongoose.FlattenMaps<TSchema> & Required<{ _id: unknown; }>)
-    docToObject: (TSchema & Required<{ _id: unknown; }>)
+export interface IFixtureInserted {
+    doc: (mongoose.Document<any> & Required<{ _id: unknown; }>)
+    docLean: (mongoose.FlattenMaps<any> & Required<{ _id: unknown; }>)
+    docToObject: ({ [x: string]: any; } & Required<{ _id: unknown; }>)
     Model: mongoose.Model<any>
     mongoServer: MongoMemoryServer
 }
