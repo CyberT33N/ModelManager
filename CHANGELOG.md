@@ -1,3 +1,12 @@
+# [2.1.0](https://github.com/CyberT33N/ModelManager/compare/v2.0.0...v2.1.0) (2024-11-26)
+
+
+### Features
+
+* **CCS-001:** removed null from interface IFixtureInserted ([862dd68](https://github.com/CyberT33N/ModelManager/commit/862dd68e980d6f49f7ae6be8d597306d5205a313))
+
+
+
 # [2.0.0](https://github.com/CyberT33N/ModelManager/compare/v1.8.0...v2.0.0) (2024-11-26)
 
 
@@ -37,15 +46,6 @@
 
 * **CCS-001:** Changed comments and jsdocs ([04f481f](https://github.com/CyberT33N/ModelManager/commit/04f481f736897a2db7603ff028086d645bb295ad))
 * **CCS-001:** changed README.md ([af48342](https://github.com/CyberT33N/ModelManager/commit/af48342504496d63fdaf9f3b5c1367f99013fa56))
-
-
-
-# [1.5.0](https://github.com/CyberT33N/ModelManager/compare/v1.4.0...v1.5.0) (2024-10-18)
-
-
-### Features
-
-* **CCS-001:** Added FixtureManager ([f130e54](https://github.com/CyberT33N/ModelManager/commit/f130e54dad3540f91caa710c6c90c934e25237c0))
 
 
 

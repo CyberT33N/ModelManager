@@ -1,7 +1,7 @@
 {
   "name": "mongoose-model-manager",
   "type": "module",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "ModelManager is a powerful and flexible manager for Mongoose models in Node.js applications. This class simplifies the management of data models, allowing developers to dynamically load and manage Mongoose models.",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
