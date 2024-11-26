@@ -44,12 +44,12 @@ describe('[UNIT TEST] - src/ModelUtils.ts', () => {
      */
     beforeAll(async() => {
         // 📂 Importing test fixture documents for validation.
-        fixtureDoc = await import('@/test/fixtures/test/test.Test/0_test.ts') as IFixtureDoc
-        fixtureDoc2 = await import('@/test/fixtures/test/test.Test/1_test.ts') as IFixtureDoc
+        fixtureDoc = await import('@/test/fixtures/test/test.Test/0_test.mjs') as IFixtureDoc
+        fixtureDoc2 = await import('@/test/fixtures/test/test.Test/1_test.mjs') as IFixtureDoc
 
         // 🔁 Duplicated fixtures
-        fixtureDocDuplicated1 = await import('@/test/fixtures/error/duplicated/0_test.ts') as IFixtureDoc
-        fixtureDocDuplicated2 = await import('@/test/fixtures/error/duplicated/1_test.ts') as IFixtureDoc
+        fixtureDocDuplicated1 = await import('@/test/fixtures/error/duplicated/0_test.mjs') as IFixtureDoc
+        fixtureDocDuplicated2 = await import('@/test/fixtures/error/duplicated/1_test.mjs') as IFixtureDoc
     })
 
     describe('[SNAPSHOT]', () => {

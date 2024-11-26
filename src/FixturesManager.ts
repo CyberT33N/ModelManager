@@ -130,7 +130,7 @@ class FixturesManager {
      */
     private async init(): Promise<void> {
         if (_.isEmpty(this.fixtures)) {
-            const expression = `${process.cwd()}/test/fixtures/**/*.ts`
+            const expression = `${process.cwd()}/test/fixtures/**/*.mjs`
             this.fixtures = await this.globFixtures(expression)
         }
 

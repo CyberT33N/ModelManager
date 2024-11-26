@@ -496,7 +496,7 @@ const modelManager = await ModelManager.getInstance()
 
 <br>
 
-The `FixturesManager` automatically globs for all `*.ts` files at the path `test/fixtures` inside of your project root. Ensure your fixtures are following this exported format:
+The `FixturesManager` automatically globs for all `*.mjs` files at the path `test/fixtures` inside of your project root. Ensure your fixtures are following this exported format:
 ```javascript
 import mongoose from 'mongoose'
 

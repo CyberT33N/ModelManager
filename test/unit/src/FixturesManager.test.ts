@@ -101,8 +101,8 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
         modelDetails = globalThis.modelDetails
         memoryModelDetails = globalThis.memoryModelDetails
 
-        fixturesDoc = await import('@/test/fixtures/test/test.Test/0_test') as IFixtureDoc
-        fixturesDoc2 = await import('@/test/fixtures/test/test.Test/1_test') as IFixtureDoc
+        fixturesDoc = await import('@/test/fixtures/test/test.Test/0_test.mjs') as IFixtureDoc
+        fixturesDoc2 = await import('@/test/fixtures/test/test.Test/1_test.mjs') as IFixtureDoc
         docId = fixturesDoc.docContents._id.toString()
         docId2 = fixturesDoc2.docContents._id.toString()
 
@@ -213,7 +213,7 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                     // ==== SPIES/STUBS ====
                     expect(getInstanceStub.calledOnce).toBe(true)
                     expect(
-                        globFixturesStub.calledOnceWithExactly(`${process.cwd()}/test/fixtures/**/*.ts`)
+                        globFixturesStub.calledOnceWithExactly(`${process.cwd()}/test/fixtures/**/*.mjs`)
                     ).toBe(true)
 
                     // ==== EXPECTATIONS ====
@@ -257,7 +257,7 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                      */
                     beforeAll(async() => {
                         fixturesDocDuplicated = await import(
-                            '@/test/fixtures/error/duplicated/0_test'
+                            '@/test/fixtures/error/duplicated/0_test.mjs'
                         ) as IFixtureDoc
                     })
 
@@ -266,7 +266,7 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                      * @description Verifies that an error is thrown for duplicate fixture ids
                      */
                     it('should throw an error if there are duplicate fixture ids', async() => {
-                        const expression = `${process.cwd()}/test/fixtures/error/**/*.ts`
+                        const expression = `${process.cwd()}/test/fixtures/error/**/*.mjs`
                         const docId = fixturesDocDuplicated.docContents._id.toString()
 
                         try {
@@ -297,7 +297,7 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                      * @type {string} expression - Glob expression for fixtures
                      */
                     let globSpy: sinon.SinonSpy
-                    const expression = `${process.cwd()}/test/fixtures/test/**/*.ts`
+                    const expression = `${process.cwd()}/test/fixtures/test/**/*.mjs`
 
                     /**
                      * 🔄 Before each test setup
