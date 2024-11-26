@@ -1,3 +1,12 @@
+# [1.7.0](https://github.com/CyberT33N/ModelManager/compare/v1.6.0...v1.7.0) (2024-11-26)
+
+
+### Features
+
+* **CCS-001:** added FixturesManager to index exports ([e97e22d](https://github.com/CyberT33N/ModelManager/commit/e97e22dfa2d752be5984fb1b72531ba9fe915711))
+
+
+
 # [1.6.0](https://github.com/CyberT33N/ModelManager/compare/v1.5.0...v1.6.0) (2024-10-20)
 
 
@@ -32,15 +41,6 @@
 ### Features
 
 * **CCS-001:** find type test for .getModel() ([4cd2ba3](https://github.com/CyberT33N/ModelManager/commit/4cd2ba3be2933d5112d93991bae94d9c60d7e3e4))
-
-
-
-# [1.2.0](https://github.com/CyberT33N/ModelManager/compare/v1.1.0...v1.2.0) (2024-10-12)
-
-
-### Features
-
-* **CCS-001:** added error test 'should throw error if the model with the specified name is not found' ([462d305](https://github.com/CyberT33N/ModelManager/commit/462d30565f1845901902fbb36075caf2fd82efd5))
 
 
 
