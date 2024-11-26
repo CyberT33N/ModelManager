@@ -57,9 +57,9 @@ export interface IFixtureDoc {
  * @property {MongoMemoryServer} mongoServer - Instance of the in-memory MongoDB server used.
  */
 export interface IFixtureInserted {
-    doc: (mongoose.Document<unknown> & Required<{ _id: unknown; }>) | null
-    docLean: (mongoose.FlattenMaps<unknown> & Required<{ _id: unknown; }>) | null
-    docToObject: ({ [x: string]: any; } & Required<{ _id: unknown; }>) | undefined
+    doc: (mongoose.Document<unknown> & Required<{ _id: unknown; }>)
+    docLean: (mongoose.FlattenMaps<unknown> & Required<{ _id: unknown; }>)
+    docToObject: ({ [x: string]: any; } & Required<{ _id: unknown; }>)
     Model: mongoose.Model<any>
     mongoServer: MongoMemoryServer
 }
@@ -218,6 +218,10 @@ class FixturesManager {
                             // Fetch the document in lean and full forms
                             const docLean = await Model.findOne({ _id: id }).lean()
                             const doc = await Model.findOne({ _id: id })
+
+                            if (!docLean || !doc) {
+                                throw new ResourceNotFoundError(`[Model Manager] - Fixture not found: ${id}`, { id })
+                            }
 
                             // Store the processed fixture object
                             const fixtureObject: IFixture = {

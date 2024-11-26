@@ -80,9 +80,9 @@ describe('[TYPE TEST] - src/FixturesManager.ts', () => {
          * @property {MongoMemoryServer} mongoServer - Instance of the in-memory MongoDB server used.
          */
         interface IFixtureInserted_Test {
-            doc: (mongoose.Document<unknown> & Required<{ _id: unknown; }>) | null
-            docLean: (mongoose.FlattenMaps<unknown> & Required<{ _id: unknown; }>) | null
-            docToObject: ({ [x: string]: any; } & Required<{ _id: unknown; }>) | undefined
+            doc: (mongoose.Document<unknown> & Required<{ _id: unknown; }>)
+            docLean: (mongoose.FlattenMaps<unknown> & Required<{ _id: unknown; }>)
+            docToObject: ({ [x: string]: any; } & Required<{ _id: unknown; }>)
             Model: mongoose.Model<any>
             mongoServer: MongoMemoryServer
         }

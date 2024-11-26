@@ -343,6 +343,14 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
              */
             describe('insert()', () => {
                 /**
+                 * 📊 Expected results
+                 * @type {Object} expecteddocLean - Expected lean document
+                 * @type {Object} expectedToObjectDoc - Expected toObject document
+                 */
+                const expecteddocLean = { lean: true }
+                const expectedToObjectDoc = { toObject: true }
+                                    
+                /**
                  * ❌ Test suite for error scenarios
                  * @description Tests error handling in insert method
                  */
@@ -407,6 +415,73 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                             assert.fail('This line should not be reached')
                         }
                     })
+
+                    describe('[CREATION ERROR]', () => {
+                        describe('[LEAN DOC]', () => {
+                            /**
+                             * 🔧 Test setup variables
+                             * @type {sinon.SinonStub} getModelStub - Stub for getModel method
+                             * @type {sinon.SinonStub} createMemoryModelStub - Stub for createMemoryModel method
+                             * @type {sinon.SinonStub} modelCreateStub - Stub for model creation
+                             * @type {Record<string, any>} expectedDoc - Expected document structure
+                             * @type {sinon.SinonStub} findOneStub - Stub for findOne method
+                             * @type {sinon.SinonStub} leanStub - Stub for lean method
+                             * @type {sinon.SinonStub} toObjectStub - Stub for toObject method
+                             */
+                            let leanStub: sinon.SinonStub
+                            let findOneStub: sinon.SinonStub
+                            let getModelStub: sinon.SinonStub
+
+                            beforeEach(() => {
+                                getModelStub = sinon.stub()
+                                fixturesManager['modelManager'] = {
+                                    getModel: getModelStub.returns(modelDetails)
+                                } as unknown as ModelManager
+        
+                                sinon.stub(
+                                    ModelUtils, 'createMemoryModel'
+                                ).resolves(memoryModelDetails)
+        
+                                sinon.stub(
+                                    memoryModelDetails.Model, 'create'
+                                ).resolves()
+
+                                // ==== Model.findOne() ====
+                                findOneStub = sinon.stub(memoryModelDetails.Model, 'findOne')
+
+                                leanStub = sinon.stub().returns(undefined)
+
+                                findOneStub.withArgs({ _id: docId }).onFirstCall().returns({
+                                    lean: leanStub
+                                })
+                            })
+
+                            /**
+                             * 🧪 Test case: Handling non-existent fixture
+                             * @description Verifies that an error is thrown for non-existent fixture
+                             */
+                            it('should throw an error if the created fixture is not found', async() => {
+                                try {
+                                    await fixturesManager.insert([docId])
+                                    assert.fail('This line should not be reached')
+                                } catch (err) {
+                                    if (err instanceof ResourceNotFoundError) {
+                                        expect(err.message).toBe(
+                                            `[Model Manager] - Fixture not found: ${docId}`
+                                        )
+
+                                        expect(err.data).toEqual({
+                                            id: docId
+                                        })
+
+                                        return
+                                    }
+
+                                    assert.fail('This line should not be reached')
+                                }
+                            })
+                        })
+                    })
                 })
 
                 /**
@@ -431,14 +506,6 @@ describe('[UNIT TEST] - src/FixtureManager.ts', () => {
                     let findOneStub: sinon.SinonStub
                     let leanStub: sinon.SinonStub
                     let toObjectStub: sinon.SinonStub
-
-                    /**
-                     * 📊 Expected results
-                     * @type {Object} expecteddocLean - Expected lean document
-                     * @type {Object} expectedToObjectDoc - Expected toObject document
-                     */
-                    const expecteddocLean = { lean: true }
-                    const expectedToObjectDoc = { toObject: true }
 
                     /**
                      * 🔄 Before each test setup
